@@ -1,0 +1,1 @@
+data <- read.dta(file="arsenicrice2.dta")
