@@ -1,0 +1,150 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{{#1}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{{#1}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\ErrorTok}[1]{\textbf{{#1}}}
+\newcommand{\NormalTok}[1]{{#1}}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={Antoine Baldassari},
+            pdftitle={Homework \#3},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Homework \#3}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Antoine Baldassari}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{November 17, 2015}
+
+
+
+\begin{document}
+
+\maketitle
+
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{print}\NormalTok{(}\StringTok{"ok"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "ok"
+\end{verbatim}
+
+\begin{enumerate}
+        \item Analyze the arsenic data using a standard conditionally-conjugate specification\\
+        
+        Let the within- and between- group sampling models be normal with:
+        \begin{align*}
+            \phi_j &= \left\{ y | \phi_j \right\}, \ p(y|\phi_j) = \text{normal}(\theta_j, \sigma^2) \text{~ (within group) } \\
+            \psi &= \left\{ \mu, \tau^2 \right\}, \ p(\theta_j|\psi) = \text{normal}(\mu, \tau^2) \text{~ (between-group) }
+        \end{align*}
+        In this conditionally-conjugate specification:
+        \begin{align*}
+            1/\sigma^2 & \sim \text{gamma }(\nu_0/2, \nu_0\sigma^2_0/2)\\
+            1/\tau^2 & \sim \text{gamma }(\eta_0/2,\eta_0\tau^2/2)\\
+            \mu & \sim \text{normal }(\mu_0, \gamma_0^2)
+        \end{align*}
+        The full conditional distribution of the parameters can be found to be:
+        \begin{align*}
+            & \left\{ \theta_j | y_{1,j},\ldots,y_{n_j,j},\sigma^2 \right\} \sim \text{normal }\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
+            & \left\{\mu | \theta_1,\ldots,\theta_m,\tau \right\} \sim \text{normal } \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
+            & \left\{ 1/\tau^2 | \theta_1, \ldots, \theta_m, \mu \right\} \sim \text{gamma }\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
+            & \left\{1/\sigma^2 | \boldsymbol{\theta}, \boldsymbol{y_1}, \ldots, \boldsymbol{y_n} \right\} \sim \text{gamma }\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
+        \end{align*}
+        We pick relatively uninformative priors, centering $\mu$ around $1$ with large variance $\tau^2 = 1000$
+        The marginal distributions of $\theta_1, \ldots, \theta_m, \mu, \sigma^2$ and $\tau^2$ can be obtained from the full condition distributions using a Monte-Carlo Markov-Chain algorithm, Gibbs sampling, which follows the procedure (accompanied with R code):
+  
+        \begin{itemize}
+          \item Set prior distributions
+          \item Set initial values for algorithm
+          \item Create a Markov chain of $S$ items for each parameter:
+            \begin{itemize}
+              \item ok
+            \end{itemize}
+          \item Estimate marginal distributions from samples stored in the Markov chains
+        \end{itemize}
+        We first check that the MCMC model converged for all four statistics:
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,273 @@
+---
+title: 'Homework #3'
+author: "Antoine Baldassari"
+date: "November 17, 2015"
+output: 
+  pdf_document:
+    highlight: zenburn
+---
+
+\textbf{Analyze the arsenic data using a standard conditionally-conjugate specification} \newline
+  
+  
+  
+
+
+
+
+Let the within- and between- group sampling models be normally-distributed with:
+	\begin{align*}
+		\phi_j &= \left\{ y | \phi_j \right\}, \ p(y|\phi_j) = \text{normal}(\theta_j, \sigma^2) \text{~ (within group) } \\
+		\psi &= \left\{ \mu, \tau^2 \right\}, \ p(\theta_j|\psi) = \text{normal}(\mu, \tau^2) \text{~ (between-group) }
+	\end{align*}
+	In this conditionally-conjugate specification:
+	\begin{align*}
+		1/\sigma^2 & \sim \text{gamma }(\nu_0/2, \nu_0\sigma^2_0/2)\\
+		1/\tau^2 & \sim \text{gamma }(\eta_0/2,\eta_0\tau^2/2)\\
+		\mu & \sim \text{normal }(\mu_0, \gamma_0^2)
+	\end{align*}
+	The full conditional distribution of the parameters can be found to be:
+	\begin{align*}
+		& \left\{ \theta_j | y_{1,j},\ldots,y_{n_j,j},\sigma^2 \right\} \sim \text{normal }\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
+		& \left\{\mu | \theta_1,\ldots,\theta_m,\tau \right\} \sim \text{normal } \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
+		& \left\{ 1/\tau^2 | \theta_1, \ldots, \theta_m, \mu \right\} \sim \text{gamma }\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
+		& \left\{1/\sigma^2 | \boldsymbol{\theta}, \boldsymbol{y_1}, \ldots, \boldsymbol{y_n} \right\} \sim \text{gamma }\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
+	\end{align*}
+We pick relatively uninformative priors, centering $\mu$ around $1$ with large variance $\tau^2 = 1000$.
+The marginal distributions of $\theta_1, \ldots, \theta_m, \mu, \sigma^2$ and $\tau^2$ can be obtained from the full condition distributions using a Monte-Carlo Markov-Chain algorithm, Gibbs sampling, which we implement in R as follows::\newline
+
+
+First, we input the dataset downloaded from Sakai, modified in Stata to have numeric codes for rice products categories.
+```{.r}
+library(foreign)
+Y <- read.dta(file="arsenicrice2.dta")
+```
+
+We set weakly informative prior values
+```{.r}
+n <-  nrow(Y)
+nu0 <- 1; eta0 <- 1; t20 <- 3;
+mu0 <- mean(Y$arsenic); 
+g20 <- s20 <- var(Y$arsenic)
+```	
+
+We set initial values for algorithm 
+```{.r}
+m <- length(unique(Y$food_num)) #number of groups
+n <- sv <- ybar <- rep(NA,m) 
+for (i in 1:m) 
+{
+  n[i] <- sum(Y$food_num==i)
+  sv[i] <- var(Y$arsenic[which(Y$food_num==i)])
+  ybar[i] <- mean(Y$arsenic[which(Y$food_num==i)])
+}
+theta <- ybar; s2 <- mean(sv)
+mu <- mean(theta); tau2 <- var(theta)
+```	
+
+```{.r, echo=FALSE}
+newTheta <- function(n, ybar, s2, tau2, mu)
+{
+  v = 1/(n/s2 +1/tau2)
+  e = v * (ybar*n/s2 +mu/tau2)
+  new <- rnorm(1, e, sqrt(v))
+  return(new)
+}
+newSigma2 <- function(m, n, nu0, s20, theta, Y)
+{
+  nun = nu0 + sum(n)
+  ss <- nu0 * s20
+  for(i in 1:m) ss = ss+sum((Y$arsenic[which(Y$food_num==i)] - theta[j])^2)
+  sigma2 <- 1/rgamma(1, nun/2, ss/2)
+  return(sigma2)
+}
+newMu <- function(m, theta, tau2, g20)
+{
+  v = 1/(m/tau2 + 1/g20)
+  e = v *(m*mean(theta)/tau2 + mu0/g20)
+  mu <- rnorm(1, e, v)
+  return(mu)
+}
+newTau2 <- function(m, eta0, t20, theta, mu)
+{
+  etam = eta0 + m
+  ss <- eta0*t20 + sum( (theta-mu) ^2 )
+  tau2 <- 1/rgamma(1, etam/2, ss/2)
+  return(tau2)
+}
+```
+
+We create a Markov chain for each parameter by sequentially sampling from their posterior over 10,000 iterations. Elements are stored in the chain at the end of each iteration. 
+```{.r}
+#Setup MCMC
+set.seed(0808)
+S <- 10000
+THETA <- matrix(nrow=S, ncol=m)
+OTH <- matrix(nrow=S, ncol=3)
+ALL <- matrix(nrow=S, ncol=3+m)
+
+#Run algorithm
+for(i in 1:S)
+{
+  #Get new values for parameters
+  for(j in 1:m) theta[j] <- newTheta(n[j], ybar[j], s2, tau2, mu)
+  s2 <- newSigma2(m, n, nu0, s20, theta, Y)
+  mu <- newMu(m, theta, tau2, g20)
+  tau2 <- newTau2(m, eta0, t20, theta, mu)
+  
+  #Store in chain
+  THETA[i,] <- theta
+  OTH[i,] <- c(mu,s2,tau2)
+  ALL[i,] < c(OTH[i,],theta)
+}
+```
+Where the functions updating the parameters follow the equations listed above:
+```{.r}
+newTheta <- function(n, ybar, s2, tau2, mu)
+{
+  v = 1/(n/s2 +1/tau2)
+  e = v * (ybar*n/s2 +mu/tau2)
+  new <- rnorm(1, e, sqrt(v))
+  return(new)
+}
+newSigma2 <- function(m, n, nu0, s20, theta, Y)
+{
+  nun = nu0 + sum(n)
+  ss <- nu0 * s20
+  for(i in 1:m) ss = ss+sum((Y$arsenic[which(Y$food_num==i)] - theta[j])^2)
+  sigma2 <- 1/rgamma(1, nun/2, ss/2)
+  return(sigma2)
+}
+newMu <- function(m, theta, tau2, g20)
+{
+  v = 1/(m/tau2 + 1/g20)
+  e = v *(m*mean(theta)/tau2 + mu0/g20)
+  mu <- rnorm(1, e, v)
+  return(mu)
+}
+newTau2 <- function(m, eta0, t20, theta, mu)
+{
+  etam = eta0 + m
+  ss <- eta0*t20 + sum( (theta-mu) ^2 )
+  tau2 <- 1/rgamma(1, etam/2, ss/2)
+  return(tau2)
+}
+```
+Before we go any further, we check that the MCMC model converged for all four statistics using ggplot2 (code used for $\mu$ repeated for other parameters):
+
+
+```{.r fig.width=10, fig.height=1.5}
+library(ggplot2)
+graphdata <- data.frame(
+              "Iteration"=c(1:S), "Mu"=OTH[,1], "Sigma2"=OTH[,2], "Tau2"=OTH[,3], 
+              "Theta_1" = THETA[,1], "Theta_2" = THETA[,2], "Theta_3" = THETA[,3], 
+              "Theta_4" = THETA[,4], "Theta_5" = THETA[,5])
+              
+ggplot(graphdata,aes(x=Iteration,y=Mu)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+```
+```{.r fig.width=10, fig.height=1.5, echo=FALSE}
+
+ggplot(graphdata,aes(x=Iteration,y=Sigma2)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Tau2)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Theta_1)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Theta_2)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Theta_3)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Theta_4)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Theta_5)) +
+theme_minimal(base_family = "") + geom_line(colour="wheat3")
+```
+
+We conclude from the graphs that convergence was achieved for all parameters. The Median values and 95\% credible intervals are as follow (computed with the R-library hdrcde):
+
+
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 2.810 & 3.569 & 4.308 \\ 
+    $\theta_2$ (Non-Basmati) & 5.790 & 6.533 & 7.305 \\
+    $\theta_3$ (Beverage) & 1.869 & 4.231 & 6.448 \\
+    $\theta_4$ (Cakes) & 4.486 & 5.370 & 6.301 \\
+    $\theta_5$ (Cereal) & 2.705 & 3.610 & 4.507 \\
+    $\mu$ & 3.193 & 4.697 & 6.182 \\
+    $\sigma^2$ & 5.109 & 7.027 & 10.573 \\
+    $\tau^2$ & 0.693 &2.251 & 12.920 \\ \hline
+  \end{tabular}
+\end{center}
+
+
+
+
+Evaluation of sensitivity tp priors: we try three separate scenarios each tuning prior distribution of parameters:
+\begin{enumerate}
+  \item Large expected $\mu$ (Prior expectation of mad levels of arsenic)
+  \item Large $\sigma^2$ and $\nu_0$ (High variability within products)
+  \item Large $\tau^2$ and $\eta_0$ (High variability between products)
+\end{enumerate}
+
+
+\newpage Scenario 1:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati)&2.706&3.488&4.265\\
+    $\theta_2^2$ (Non-Basmati)&5.902&6.671&7.460\\
+    $\theta_3 (Beverage)$&0.643&3.774&6.932\\
+    $\theta_4 (Cakes)$&4.511&5.452&6.429\\
+    $\theta_5$ (Cereal)&2.548&3.496&4.456\\
+    $\mu$ &2.548&3.496&4.456\\
+    $\sigma^2$ &88.793&100&111\\
+    $\tau^2$ &3021.927&8427&37962\\ \hline
+  \end{tabular}
+\end{center}
+
+Scenario 2:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% \\ \hline
+    $\theta_1$ (Basmati)& 1.237 & 4.396 & 7.069\\
+    $\theta_2^2$ (Non-Basmati)& 2.811 & 5.401 & 8.559 \\
+    $\theta_3 (Beverage)$& 0.278 & 4.790 & 9.023 \\
+    $\theta_4 (Cakes)$& 1.931 & 4.960 & 8.221\\
+    $\theta_5$ (Cereal)& 1.137 & 4.531 & 7.508\\
+    $\mu$ &2.42 & 4.84 & 7.19\\
+    $\sigma^2$ &182 & 215& 256\\
+    $\tau^2$ &0.399 & 1.876 & 22.3\\ \hline
+
+  \end{tabular}
+\end{center}
+
+Scenario 3:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% \\ \hline
+    $\theta_1$ (Basmati)& 2.707 & 3.478 & 4.268\\
+    $\theta_2^2$ (Non-Basmati)& 5.907 & 6.674 & 7.451 \\
+    $\theta_3 (Beverage)$& 0.676 & 3.739 & 6.9023 \\
+    $\theta_4 (Cakes)$& 4.504 & 5.447 & 6.419\\
+    $\theta_5$ (Cereal)& 2.547 & 3.494 & 4.452\\
+    $\mu$ &-5.302 & 4.845 & 5.00\\
+    $\sigma^2$ &5.197 & 7.327 & 11.37\\
+    $\tau^2$ &223 & 288 & 384\\ \hline
+  \end{tabular}
+\end{center}
+
+
+We observe that excessively large prior expectations of $\mu$ leads to large estimates of the between-sample variance, but will have little effect on the magnitude of the estimates of within-groupmean estimates (although the precision may be negatively affected for groups with realtively few observations). A large prior within-sample variance will bring posterior within-group means closer to $\mu$, as could be expected since the posterior estimates need to become more conservative. Increasing prior between-sample variance appears to drive up uncertainty on $\mu$ and bring it closer to $0$, without however having a notable impact on the rest of the model.
