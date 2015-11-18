@@ -99,7 +99,31 @@ graphdata <- data.frame("Iteration"=c(1:S), "Mu"=OTH[,1], "Sigma2"=OTH[,2], "Tau
 
 for (i in (1:8))
 {
-  # k <- c(median(ALL[,i]),  hdr(ALL[,i])$hdr[2,1:2])
-  k <- quantile(ALL[,i], probs=c(0.025, 0.5, 0.975))
-  print(round(k,3))
+  print(round(unname(quantile(ALL[,i], probs=c(0.025, 0.5, 0.975))),3))
 }
+library(plotrix)
+qmat=apply(THETA[,1:5],2,quantile,probs=c(0.025,.5,0.975))
+plotCI(1:5, qmat[2,],li=qmat[1,],ui=qmat[3,],
+       main='Inorganic arsenic in five rice products',
+       xlab='Rice index',ylab='Arsenic content')
+points(idvec, ybar, col=2, pch='*')
+
+abline(h=mu_ci[2], col=4, lty=1)
+abline(h=mu_ci[1], col=4, lty=2)
+abline(h=mu_ci[3], col=4, lty=2)
+
+library(plotrix)
+qmat=apply(THETA[,1:5],2,quantile,probs=c(0.025,.5,0.975))
+mu_ci = quantile(OTH[,1], probs=(c(0.025, 0.5, 0.975)))
+graphdata2 <- data.frame("Rice"=c("Non-Basmati", "Basmati", "Beverages", "Cakes", "Cereal"),
+                         "l95"=qmat[1,], "median"=qmat[2,], "u95"=qmat[3,])
+g <- ggplot(graphdata2, aes(x = Rice, group=Rice, colour=Rice)) + 
+  labs(x="Rice Products", y="Arsenic concentration, mcg/serving") + 
+  theme(legend.position="none", panel.background =element_rect(colour = "black")) +
+  scale_y_continuous(breaks=seq(0, 7.5, 1)) +
+  geom_hline(aes(yintercept=c(mu_ci[2])), size=0.7) +
+  geom_hline(aes(yintercept=c(mu_ci[1])), linetype="dashed") +
+  geom_hline(aes(yintercept=c(mu_ci[3])), linetype="dashed") +
+  geom_errorbar(aes(ymin=l95, ymax=u95), width=.3, size=0.8) +
+  geom_point(aes(y=median), fill="white", shape=21, size=5) 
+g
