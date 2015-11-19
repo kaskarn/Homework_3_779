@@ -111,17 +111,17 @@
 \maketitle
 
 
-\section{1. Shared variance across groups}\subsection{1.1 Definitions and derivations}
+\section{1. Standard conditionally-conjugate specification of the hierarchical model}\subsection{1.1 Model specification}
 
-Let the within- and between- group sampling models be
-normally-distributed with:
-
-\begin{align*}
-        \phi_j &= \left\{ y | \phi_j \right\}, \ p(y|\phi_j) = \text{normal}(\theta_j, \sigma^2) \text{~ (within group) } \\
-        \psi &= \left\{ \mu, \tau^2 \right\}, \ p(\theta_j|\psi) = \text{normal}(\mu, \tau^2) \text{~ (between-group) }
-    \end{align*}
-
-In this conditionally-conjugate specification:
+In this model specification, the \(i^{th}\) arsenic reading of group
+\(j\), \(y_{ij}\) is normally-distributed, so that
+\[y_{ij} \sim \mathcal{N}\left( \theta_j, \sigma^2 \right)\] Where
+\(\theta_j\) is the mean arsenic reading for the rice products indexed
+by \(j\). \(\theta_j\) is normally distributed, centered at the
+population mean \(\mu\), with between-group variance \(\tau^2\):
+\[\theta_j \sim \mathcal{N}\left( \mu, \tau^2 \right) \] We use
+conditionally-conjugate Normal and Inverse-Gamma priors on the
+hyperparameters:
 
 \begin{align*}
         1/\sigma^2 & \sim \text{gamma }(\nu_0/2, \nu_0\sigma^2_0/2)\\
@@ -129,16 +129,17 @@ In this conditionally-conjugate specification:
         \mu & \sim \text{normal }(\mu_0, \gamma_0^2)
     \end{align*}
 
-The full conditional distribution of the parameters can be found to be:
+The full conditional distribution of the parameters can be found to be
+(from the book):
 
 \begin{align*}
-        & \left\{ \theta_j | \sigma^2, y_{1,1},\ldots,y_{n,m} \right\} \sim \text{normal }\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
-        & \left\{\mu | \theta_1,\ldots,\theta_m,\tau \right\} \sim \text{normal } \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
-        & \left\{ 1/\tau^2 | \theta_1, \ldots, \theta_m, \mu \right\} \sim \text{gamma }\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
-        & \left\{1/\sigma^2 | \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim \text{gamma }\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
+        \left\{ \theta_j \, | \, \sigma^2, y_{j,1},\ldots,y_{j,n} \right\} \sim& \, \mathcal{N}\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
+        \left\{\mu \, | \, \theta_1,\ldots,\theta_m,\tau \right\} \sim& \, \mathcal{N} \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
+        \left\{ 1/\tau^2 \, | \, \theta_1, \ldots, \theta_m, \mu \right\} \sim& \, \mathcal{N}\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
+        \left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
     \end{align*}
 
-\subsection{1.2 Analyses}
+\subsection{1.2 Main analyses}
 
 We pick relatively uninformative priors, centering \(\mu\) around \(1\)
 with somewhat large within and between sample variances:
@@ -322,7 +323,7 @@ each tuning prior distribution of parameters:
   \item Large $\tau^2$ and $\eta_0$ (High variability between products)
 \end{enumerate}
 
-Scenario 1:
+\textit{Scenario 1}:
 
 \begin{center}
   \begin{tabular}{l c c c}
@@ -338,7 +339,7 @@ Scenario 1:
   \end{tabular}
 \end{center}
 
-Scenario 2:
+\textit{Scenario 2}:
 
 \begin{center}
   \begin{tabular}{l c c c}
@@ -355,7 +356,7 @@ Scenario 2:
   \end{tabular}
 \end{center}
 
-Scenario 3:
+\textit{Scenario 3}:
 
 \begin{center}
   \begin{tabular}{l c c c}
@@ -372,8 +373,8 @@ Scenario 3:
 \end{center}
 
 We observe that excessively large prior expectations of \(\mu\) will
-drive estimates of the within- and between-group variances but will have
-little effect on the magnitude of the estimates of within-groupmean
+drive up estimates of the within- and between-group variances but will
+have little effect on the magnitude of the estimates of within-groupmean
 estimates (although the precision may be negatively affected for groups
 with realtively few observations). A large prior within-sample variance
 will bring posterior within-group means closer to \(\mu\), as could be
@@ -394,15 +395,14 @@ and observed mean concentrations of arsenic are presented by product
 type in the following graph. Markers are \(\theta\) estimates with
 \(95\%\) credible interval lines; horizontal lines are the median
 estimate of \(\mu\) (solid) and corresponding \(95\%\) credibal interval
-(dashed).
+(dashed, like my hopes and dreams).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{library}\NormalTok{(plotrix)}
 \NormalTok{qmat=}\KeywordTok{apply}\NormalTok{(THETA[,}\DecValTok{1}\NormalTok{:}\DecValTok{5}\NormalTok{],}\DecValTok{2}\NormalTok{,quantile,}\DataTypeTok{probs=}\KeywordTok{c}\NormalTok{(}\FloatTok{0.025}\NormalTok{,.}\DecValTok{5}\NormalTok{,}\FloatTok{0.975}\NormalTok{))}
 \NormalTok{mu_ci =}\StringTok{ }\KeywordTok{quantile}\NormalTok{(OTH[,}\DecValTok{1}\NormalTok{], }\DataTypeTok{probs=}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\FloatTok{0.025}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\FloatTok{0.975}\NormalTok{)))}
 \NormalTok{res <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\StringTok{"Rice"}\NormalTok{=}\KeywordTok{c}\NormalTok{(}\StringTok{"Non-Basmati"}\NormalTok{, }\StringTok{"Basmati"}\NormalTok{, }\StringTok{"Beverages"}\NormalTok{, }\StringTok{"Cakes"}\NormalTok{, }\StringTok{"Cereal"}\NormalTok{),}
-                         \StringTok{"l95"}\NormalTok{=qmat[}\DecValTok{1}\NormalTok{,], }\StringTok{"median"}\NormalTok{=qmat[}\DecValTok{2}\NormalTok{,], }\StringTok{"u95"}\NormalTok{=qmat[}\DecValTok{3}\NormalTok{,])}
+                         \StringTok{"l95"}\NormalTok{=qmat[}\DecValTok{1}\NormalTok{,], }\StringTok{"median"}\NormalTok{=qmat[}\DecValTok{2}\NormalTok{,], }\StringTok{"u95"}\NormalTok{=qmat[}\DecValTok{3}\NormalTok{,], }\StringTok{"mean"}\NormalTok{=ybar)}
 \NormalTok{g <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(res, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \NormalTok{Rice, }\DataTypeTok{group=}\NormalTok{Rice, }\DataTypeTok{colour=}\NormalTok{Rice)) +}\StringTok{ }
 \StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=}\StringTok{"Rice Products"}\NormalTok{, }\DataTypeTok{y=}\StringTok{"Arsenic concentration, mcg/serving"}\NormalTok{) +}\StringTok{ }
 \StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position=}\StringTok{"none"}\NormalTok{, }\DataTypeTok{panel.background =}\KeywordTok{element_rect}\NormalTok{(}\DataTypeTok{colour =} \StringTok{"black"}\NormalTok{)) +}
@@ -411,11 +411,276 @@ estimate of \(\mu\) (solid) and corresponding \(95\%\) credibal interval
 \StringTok{  }\KeywordTok{geom_hline}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{yintercept=}\KeywordTok{c}\NormalTok{(mu_ci[}\DecValTok{1}\NormalTok{])), }\DataTypeTok{linetype=}\StringTok{"dashed"}\NormalTok{) +}
 \StringTok{  }\KeywordTok{geom_hline}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{yintercept=}\KeywordTok{c}\NormalTok{(mu_ci[}\DecValTok{3}\NormalTok{])), }\DataTypeTok{linetype=}\StringTok{"dashed"}\NormalTok{) +}
 \StringTok{  }\KeywordTok{geom_errorbar}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{ymin=}\NormalTok{l95, }\DataTypeTok{ymax=}\NormalTok{u95), }\DataTypeTok{width=}\NormalTok{.}\DecValTok{3}\NormalTok{, }\DataTypeTok{size=}\FloatTok{0.8}\NormalTok{) +}
-\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{median), }\DataTypeTok{fill=}\StringTok{"white"}\NormalTok{, }\DataTypeTok{shape=}\DecValTok{21}\NormalTok{, }\DataTypeTok{size=}\DecValTok{5}\NormalTok{) }
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{median), }\DataTypeTok{fill=}\StringTok{"white"}\NormalTok{, }\DataTypeTok{shape=}\DecValTok{21}\NormalTok{, }\DataTypeTok{size=}\DecValTok{5}\NormalTok{)  +}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{mean), }\DataTypeTok{fill=}\StringTok{"red"}\NormalTok{, }\DataTypeTok{shape=}\DecValTok{21}\NormalTok{, }\DataTypeTok{size=}\DecValTok{3}\NormalTok{)}
 \NormalTok{g}
 \end{Highlighting}
 \end{Shaded}
 
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-10-1.pdf}
+\newpage \section{2. Parameter-expanded specification of the hierarchical model}
+\subsection{2.1 Model specification} Under this model specification,
+instead of group means we are interested in differences between groups
+and the population average \(\mu\), which is given by \(\eta_j\) for the
+group \(j\), so that (under the prior belief that all groups will have
+equal mean):
+
+\begin{align*}
+  y_{ij} \sim& \, \mathcal{N}\left( \mu + \xi\eta_j, \sigma_y^2 \right)\\
+  \eta_i \sim& \, \mathcal{N}\left( 0, \sigma_\eta^2 \right)
+\end{align*}
+
+Word's on the street that well-behaved conditionally-conjugate
+specifications for the distributions of \(\xi\) and \(\sigma_\eta^2\)
+are:
+
+\begin{align*}
+  \xi \sim& \, \mathcal{N}\left( 0, 1 \right) \\
+  1/\sigma^2_\eta \sim& \, \text{gamma}\left( \frac{\omega_0}{2}, \frac{\omega_0\sigma^2_{\eta0}}{2} \right) \\
+  1/\sigma^2_y \sim& \, \text{gamma}\left( \frac{\nu_0}{2}, \frac{\nu_0\sigma^2_{y0}}{2}\right)
+\end{align*}
+
+The prior distribution of the population mean is still
+\(\mu \sim \, \mathcal{N}\left( \mu_0, \gamma_0^2\right)\). We set out
+to find full conditionals: Reparametrizing the full conditionals in
+exercise 1 easily yields what we need: \newline
+
+Note that each of the \(N\) observation in the data supports,
+\(\mu = y_{ij} - xi\eta_j\) given known \(\xi\) and \(\eta_j\)'s, so
+that, summing over this expression and weighting it against the prior
+yields:
+
+\begin{flalign*}
+p\left( \mu, \sigma^2_y, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \, | \, \mathbf{y}\right) \alpha& \; \mathcal{N} \left( \frac{\frac{\sum\limits_j\sum\limits_i y_{ij} - \xi\eta_j}{\sigma^2_y} + \frac{\mu_0}{\gamma_0^2}}{\frac{N}{\sigma^2_y}+\frac{1}{\gamma_0^2}},\frac{1}{\frac{N}{\sigma^2_y}+\frac{1}{\gamma_0^2}} \right) &
+\end{flalign*}
+
+Posterior on the variances can be similarly rewritten. The sum of
+squares for \(\mathbf{y}\) given \(\mu, \eta_j\) and \(\xi\) is, of
+course, \(\sum\limits_j\sum\limits_i y_{ij} - \mu - \xi\eta_j\), and the
+sum of squares of \(\boldsymbol{\eta}\) given its \(\mathbb{E}=0\) is
+simply \(\sum\limits_j\eta_j^2\)
+
+\begin{flalign*}
+p\left( \sigma^2_y \, | \, \mathbf{y}, \mu, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\nu_0 + N}{2}, \frac{1}{2}\left( \nu_0\sigma_{y0}^2 + \sum\limits_j\sum\limits_i y_{ij} - \mu - \xi\eta_j \right)^2 \right) & \\
+p\left( \sigma^2_\eta \, | \, \mathbf{y}, \mu, \sigma^2_y, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\omega_0 + m}{2}, \frac{1}{2}\left( \omega_0\sigma_{\eta_0}^2 + \sum\limits_j\eta_j^2 \right) \right)  &
+\end{flalign*}
+
+Getting full conditionals is trickier and requires recognizing that
+\(\mathbb{E}\left(aX \right) = a\mathbb{E}\left( X \right)\) and
+\(Var\left(aX \right) = a^2Var\left(X\right)\), so that:
+
+\begin{flalign*}
+  p\left( \eta_j \, | \, \mathbf{y}, \mu, \sigma^2_y, \sigma^2_\eta, \xi \right) \alpha& \; \mathcal{N}\left( \frac{\frac{\xi\sum\limits_iy_{ij}-\mu}{\sigma^2_y}}{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}, \frac{1}{{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}}\right) & 
+\end{flalign*}
+
+and
+
+\begin{flalign*}
+  p\left( \xi \, | \, \mathbf{y}, \mu, \sigma^2_y, \sigma^2_\eta, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N} \left( \frac{\frac{\sum\limits_j\eta_j\sum\limits_i \left( y_{ij} - \mu \right)}{\sigma^2_y}}{\frac{\sum\limits_j n_j \eta_j^2}{\sigma^2_y}+1}, \frac{1}{\frac{\sum\limits_j n_j \eta_j^2}{\sigma^2_y}+1}\right) &
+\end{flalign*}\subsection{2.2 Analyses}
+
+Similarly to exercise 1, we pick the priors
+\(\sigma^2_{y0} = 10, \nu_0 = 1, \omega_0 = 1, \sigma_{0\eta}^2 = 10\)
+and \(\gamma_0^2 = 10\), and proceed with Gibbs sampling:
+
+We read the data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(foreign)}
+\KeywordTok{library}\NormalTok{(hdrcde)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: mvtnorm
+## hdrcde 3.1 loaded
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data <-}\StringTok{ }\KeywordTok{read.dta}\NormalTok{(}\DataTypeTok{file=}\StringTok{"arsenicrice2.dta"}\NormalTok{)}
+\NormalTok{Y <-}\StringTok{ }\KeywordTok{read.dta}\NormalTok{(}\DataTypeTok{file=}\StringTok{"arsenicrice2.dta"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We set prior values
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n <-}\StringTok{  }\KeywordTok{nrow}\NormalTok{(Y)}
+\NormalTok{nu0 <-}\StringTok{ }\DecValTok{1}\NormalTok{; omega0 <-}\StringTok{ }\DecValTok{1}\NormalTok{; }
+\NormalTok{s2_eta0 <-}\StringTok{ }\DecValTok{10}\NormalTok{; s2_y0 <-}\StringTok{ }\DecValTok{10}
+\NormalTok{mu0 <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(Y$arsenic); }
+\NormalTok{g20 <-}\StringTok{ }\KeywordTok{var}\NormalTok{(Y$arsenic)}
+\end{Highlighting}
+\end{Shaded}
+
+We setup the MCMC
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Setup starting values }
+\NormalTok{m <-}\StringTok{ }\KeywordTok{length}\NormalTok{(}\KeywordTok{unique}\NormalTok{(Y$food_num)) }\CommentTok{#number of groups}
+\NormalTok{n <-}\StringTok{ }\NormalTok{sv_y <-}\StringTok{ }\NormalTok{ybar <-}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\OtherTok{NA}\NormalTok{,m) }\CommentTok{#create empty vectors for group descriptions}
+\NormalTok{for (i in }\DecValTok{1}\NormalTok{:m) }
+\NormalTok{\{}
+  \NormalTok{n[i] <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(Y$food_num==i)}
+  \NormalTok{sv_y[i] <-}\StringTok{ }\KeywordTok{var}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)])}
+  \NormalTok{ybar[i] <-}\StringTok{  }\KeywordTok{mean}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)])}
+\NormalTok{\}}
+\NormalTok{eta <-}\StringTok{ }\NormalTok{ybar -}\StringTok{ }\KeywordTok{mean}\NormalTok{(Y$arsenic); s2_y <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(sv_y)}
+\NormalTok{mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(Y$arsenic); s2_eta <-}\StringTok{ }\KeywordTok{var}\NormalTok{(eta)}
+\NormalTok{xi <-}\StringTok{ }\DecValTok{0}
+
+\CommentTok{#Setup MCMC}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{0808}\NormalTok{)}
+\NormalTok{S <-}\StringTok{ }\DecValTok{10000}
+\NormalTok{THETA <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\NormalTok{m)}
+\NormalTok{RES <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4}\NormalTok{)}
+\NormalTok{ALL <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4}\NormalTok{+m)}
+
+\CommentTok{#Setup MCMC}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{0808}\NormalTok{)}
+\NormalTok{S <-}\StringTok{ }\DecValTok{10000}
+\NormalTok{ETA <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\NormalTok{m)}
+\NormalTok{RES <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4}\NormalTok{)}
+\NormalTok{ALL <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4}\NormalTok{+m)}
+\end{Highlighting}
+\end{Shaded}
+
+Our updating functions correspond to the full conditionals derived
+above:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#FUNCTIONS}
+\NormalTok{newS2eta <-}\StringTok{ }\NormalTok{function(m, s2_eta, s2_eta0, eta, omega0)}
+\NormalTok{\{}
+  \NormalTok{nomega =}\StringTok{ }\NormalTok{omega0 +}\StringTok{ }\NormalTok{m}
+  \NormalTok{ss <-}\StringTok{ }\NormalTok{s2_eta0*omega0 +}\StringTok{ }\KeywordTok{sum}\NormalTok{( eta^}\DecValTok{2} \NormalTok{)}
+  \NormalTok{s2_eta <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, nomega/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \KeywordTok{return}\NormalTok{(s2_eta)}
+\NormalTok{\}}
+\NormalTok{newS2y <-}\StringTok{ }\NormalTok{function(nu0, n, s2_y0, Y, m, eta, xi, mu)}
+\NormalTok{\{}
+  \NormalTok{nun =}\StringTok{ }\NormalTok{nu0 +}\StringTok{ }\KeywordTok{sum}\NormalTok{(n)}
+  \NormalTok{ss =}\StringTok{ }\NormalTok{nu0 *}\StringTok{ }\NormalTok{s2_y0}
+  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) ss =}\StringTok{ }\NormalTok{ss+}\KeywordTok{sum}\NormalTok{((Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu -}\StringTok{ }\NormalTok{xi*eta[j])^}\DecValTok{2}\NormalTok{)}
+  \NormalTok{s2_y <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, nun/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \KeywordTok{return}\NormalTok{(s2_y)}
+\NormalTok{\}}
+\NormalTok{newMu <-}\StringTok{ }\NormalTok{function(Y, xi, eta, s2_y, g20, mu0, n)}
+\NormalTok{\{}
+  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(}\KeywordTok{sum}\NormalTok{(n)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{/g20)}
+  \NormalTok{sumd =}\StringTok{ }\DecValTok{0}
+  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) sumd =}\StringTok{ }\NormalTok{sumd +}\StringTok{ }\KeywordTok{sum}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{xi*eta[i])}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v*}\StringTok{ }\NormalTok{sumd/s2_y +}\StringTok{ }\NormalTok{mu0/g20}
+  \NormalTok{mu =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \KeywordTok{return}\NormalTok{(mu)}
+\NormalTok{\}}
+\NormalTok{newEta <-}\StringTok{ }\NormalTok{function(xi, mu, Y, n, s2_y, s2_eta)}
+\NormalTok{\{}
+  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(n*xi^}\DecValTok{2}\NormalTok{/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{/s2_eta)}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v *}\StringTok{ }\NormalTok{xi/s2_y*}\KeywordTok{sum}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu)}
+  \NormalTok{eta =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \KeywordTok{return}\NormalTok{(eta)}
+\NormalTok{\}}
+\NormalTok{newXi <-}\StringTok{ }\NormalTok{function(eta, m, Y, n, mu, s2_y)}
+\NormalTok{\{}
+  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(}\KeywordTok{sum}\NormalTok{(n*eta^}\DecValTok{2}\NormalTok{)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{)}
+  \NormalTok{sumd =}\StringTok{ }\DecValTok{0}
+  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) sumd =}\StringTok{ }\NormalTok{sumd +}\StringTok{ }\KeywordTok{sum}\NormalTok{((Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu)*eta[i])}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v *}\StringTok{ }\NormalTok{sumd/s2_y}
+  \NormalTok{xi =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \KeywordTok{return}\NormalTok{(xi)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+We run the MCMC algorithm:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#RUN MCMC}
+\NormalTok{for(i in }\DecValTok{1}\NormalTok{:S)}
+\NormalTok{\{}
+  \CommentTok{#Get new values for parameters}
+  \NormalTok{for(j in }\DecValTok{1}\NormalTok{:m) theta[j] <-}\StringTok{ }\KeywordTok{newEta}\NormalTok{(xi, mu, Y, n, s2_y, s2_eta)}
+  \NormalTok{s2_y <-}\StringTok{ }\KeywordTok{newS2y}\NormalTok{(nu0, n, s2_y0, Y, m, eta, xi, mu)}
+  \NormalTok{s2_eta <-}\StringTok{ }\KeywordTok{newS2eta}\NormalTok{(m, s2_eta, s2_eta0, eta, omega0)}
+  \NormalTok{mu <-}\StringTok{ }\KeywordTok{newMu}\NormalTok{(Y, xi, eta, s2_y, g20, mu0, n)}
+  \NormalTok{xi <-}\StringTok{ }\KeywordTok{newXi}\NormalTok{(eta, m, Y, n, mu, s2_y)}
+  
+  \CommentTok{#Store in chain}
+  \NormalTok{ETA[i,] <-}\StringTok{ }\NormalTok{eta}
+  \NormalTok{RES[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(mu,s2_y, s2_eta, xi)}
+  \NormalTok{ALL[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(eta, mu,s2_y, s2_eta, xi)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Again, before we get too psyched about results, we check MCMC
+convergence criteria:
+
+\begin{verbatim}
+##            [,1]     [,2]      [,3]      [,4]      [,5]     [,6]     [,7]
+##  [1,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.667968 4.903008
+##  [2,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.683804 6.006653
+##  [3,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.652164 6.628165
+##  [4,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.645594 6.068511
+##  [5,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.620257 5.474539
+##  [6,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.641334 6.338744
+##  [7,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.642847 6.180044
+##  [8,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.688390 5.774271
+##  [9,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.718387 5.871248
+## [10,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.613030 6.048364
+## [11,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.589698 5.280218
+## [12,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.621325 5.720858
+## [13,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.691593 5.509906
+## [14,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.590404 6.907127
+## [15,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.657124 5.480785
+## [16,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.678040 6.070337
+## [17,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.711129 5.536881
+## [18,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.708383 5.813949
+## [19,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.647771 6.878466
+## [20,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.605647 6.191938
+##            [,8]      [,9]
+##  [1,]  4.473581 0.9799366
+##  [2,]  3.738244 0.9552652
+##  [3,] 11.004107 0.9412060
+##  [4,]  5.327483 0.9675979
+##  [5,]  1.867751 0.9843936
+##  [6,]  3.104652 0.9590547
+##  [7,]  6.200617 0.9802011
+##  [8,]  2.002595 1.0020117
+##  [9,]  3.204125 0.9694308
+## [10,]  3.417037 0.9828693
+## [11,]  6.280930 0.9810677
+## [12,] 22.359658 0.9988978
+## [13,]  8.994325 0.9852938
+## [14,]  2.123587 0.9948622
+## [15,]  3.909016 0.9885898
+## [16,]  2.068103 0.9843450
+## [17,]  3.012525 0.9837987
+## [18,]  3.080198 0.9811986
+## [19,]  8.931096 1.0101091
+## [20,] 12.275305 0.9794007
+\end{verbatim}
+
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-1.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-2.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-3.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-4.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-5.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-6.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-7.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-8.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-9.pdf}
+\subsection{2.3 Algorithm output} \subsection{2.4 Sensitivity analyses}
+
+\newpage \section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
+\subsection{3.1 Model specification} \subsection{3.2 Analyses}
+\subsection{3.3 Algorithm output} \subsection{3.4 Sensitivity analyses}
 
 \end{document}

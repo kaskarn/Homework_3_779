@@ -1,5 +1,6 @@
 library(foreign)
 library(hdrcde)
+setwd("Homework_3_779")
 data <- read.dta(file="arsenicrice2.dta")
 Y <- read.dta(file="arsenicrice2.dta")
 
@@ -16,7 +17,7 @@ g20 <- s20 <- var(Y$arsenic)
 #Setup starting values 
 
 m <- length(unique(Y$food_num)) #number of groups
-n <- sv <- ybar <- rep(NA,m) #create empty vectors for group descriptions
+n <- sv <- ybar <- rep(NA,m) 
 for (i in 1:m) 
 {
   n[i] <- sum(Y$food_num==i)
@@ -115,9 +116,9 @@ abline(h=mu_ci[3], col=4, lty=2)
 library(plotrix)
 qmat=apply(THETA[,1:5],2,quantile,probs=c(0.025,.5,0.975))
 mu_ci = quantile(OTH[,1], probs=(c(0.025, 0.5, 0.975)))
-graphdata2 <- data.frame("Rice"=c("Non-Basmati", "Basmati", "Beverages", "Cakes", "Cereal"),
-                         "l95"=qmat[1,], "median"=qmat[2,], "u95"=qmat[3,])
-g <- ggplot(graphdata2, aes(x = Rice, group=Rice, colour=Rice)) + 
+res <- data.frame("Rice"=c("Non-Basmati", "Basmati", "Beverages", "Cakes", "Cereal"),
+                         "l95"=qmat[1,], "median"=qmat[2,], "u95"=qmat[3,], "mean"=ybar)
+g <- ggplot(res, aes(x = Rice, group=Rice, colour=Rice)) + 
   labs(x="Rice Products", y="Arsenic concentration, mcg/serving") + 
   theme(legend.position="none", panel.background =element_rect(colour = "black")) +
   scale_y_continuous(breaks=seq(0, 7.5, 1)) +
@@ -125,5 +126,6 @@ g <- ggplot(graphdata2, aes(x = Rice, group=Rice, colour=Rice)) +
   geom_hline(aes(yintercept=c(mu_ci[1])), linetype="dashed") +
   geom_hline(aes(yintercept=c(mu_ci[3])), linetype="dashed") +
   geom_errorbar(aes(ymin=l95, ymax=u95), width=.3, size=0.8) +
-  geom_point(aes(y=median), fill="white", shape=21, size=5) 
+  geom_point(aes(y=median), fill="white", shape=21, size=5)  +
+  geom_point(aes(y=mean), fill="red", shape=21, size=3)
 g
