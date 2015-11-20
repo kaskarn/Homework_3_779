@@ -54,7 +54,7 @@ newMu <- function(m, theta, tau2, g20)
 {
   v = 1/(m/tau2 + 1/g20)
   e = v *(m*mean(theta)/tau2 + mu0/g20)
-  mu <- rnorm(1, e, v)
+  mu <- rnorm(1, e, sqrt(v))
   return(mu)
 }
 newTau2 <- function(m, eta0, t20, theta, mu)
