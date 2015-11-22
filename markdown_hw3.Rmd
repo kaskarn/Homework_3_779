@@ -27,7 +27,7 @@ We use conditionally-conjugate Normal and Inverse-Gamma priors on the hyperparam
 		\left\{ \theta_j \, | \, \sigma^2, y_{j,1},\ldots,y_{j,n} \right\} \sim& \, \mathcal{N}\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
 		\left\{\mu \, | \, \theta_1,\ldots,\theta_m,\tau \right\} \sim& \, \mathcal{N} \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
 		\left\{ 1/\tau^2 \, | \, \theta_1, \ldots, \theta_m, \mu \right\} \sim& \, \mathcal{N}\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
-		\left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
+		\left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\left(\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)\right)
 	\end{align*}
 
 \subsection{1.2 Main analyses}
@@ -316,10 +316,10 @@ p\left( \mu, \sigma^2_y, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \, | \, \mathb
 \end{flalign*}
 Posterior on the variances can be similarly rewritten. The sum of squares for $\mathbf{y}$ given $\mu, \eta_j$ and $\xi$ is, of course, $\sum\limits_j\sum\limits_i y_{ij} - \mu - \xi\eta_j$, and the sum of squares of $\boldsymbol{\eta}$ given its $\mathbb{E}=0$ is simply $\sum\limits_j\eta_j^2$ 
 \begin{flalign*}
-p\left( \sigma^2_y \, | \, \mathbf{y}, \mu, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\nu_0 + N}{2}, \frac{1}{2}\left( \nu_0\sigma_{y0}^2 + \sum\limits_j\sum\limits_i y_{ij} - \mu - \xi\eta_j \right)^2 \right) & \\
-p\left( \sigma^2_\eta \, | \, \mathbf{y}, \mu, \sigma^2_y, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\omega_0 + m}{2}, \frac{1}{2}\left( \omega_0\sigma_{\eta_0}^2 + \sum\limits_j\eta_j^2 \right) \right)  &
+p\left( 1/\sigma^2_y \, | \, \mathbf{y}, \mu, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \text{gamma }\left( \frac{\nu_0 + N}{2}, \frac{1}{2}\left( \nu_0\sigma_{y0}^2 + \sum\limits_j\sum\limits_i \left(y_{ij} - \mu - \xi\eta_j \right)^2 \right) \right) & \\
+p\left( 1/\sigma^2_\eta \, | \, \mathbf{y}, \mu, \sigma^2_y, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \text{gamma }\left( \frac{\omega_0 + m}{2}, \frac{1}{2}\left( \omega_0\sigma_{\eta_0}^2 + \sum\limits_j\eta_j^2 \right) \right)  &
 \end{flalign*}
-Getting full conditionals is trickier and requires recognizing that $\mathbb{E}\left(aX \right) = a\mathbb{E}\left( X \right)$ and $Var\left(aX \right) = a^2Var\left(X\right)$, so that:
+Getting full conditionals on $\boldsymbol{\eta}$ and $\xi$ can be likewise achieved by manipulating $y_{ij} = \mu + \eta_j\xi$.
 \begin{flalign*}
   p\left( \eta_j \, | \, \mathbf{y}, \mu, \sigma^2_y, \sigma^2_\eta, \xi \right) \alpha& \; \mathcal{N}\left( \frac{\frac{\xi\sum\limits_iy_{ij}-\mu}{\sigma^2_y}}{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}, \frac{1}{{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}}\right) & 
 \end{flalign*}
@@ -384,44 +384,39 @@ Our updating functions correspond to the full conditionals derived above:
 
 ```{.r}
 #FUNCTIONS
-newS2eta <- function(m, s2_eta, s2_eta0, eta, omega0)
+newS2eta <- function(m, s2_eta0, eta, omega0)
 {
-  nomega = omega0 + m
   ss <- s2_eta0*omega0 + sum( eta^2 )
-  s2_eta <- 1/rgamma(1, nomega/2, ss/2)
+  s2_eta <- 1/rgamma(1, shape=((omega0 + m)/2), scale=(ss/2))
   return(s2_eta)
 }
-newS2y <- function(nu0, n, s2_y0, Y, m, eta, xi, mu)
+newS2y <- function(nu0, n, s2_y0, y, m, eta, xi, mu)
 {
   nun = nu0 + sum(n)
-  ss = nu0 * s2_y0
-  for(i in 1:m) ss = ss+sum((Y$arsenic[which(Y$food_num==i)] - mu - xi*eta[j])^2)
-  s2_y <- 1/rgamma(1, nun/2, ss/2)
+  ss = sum((y - mu - xi*rep(eta, times=n))^2) + nu0*s2_y0
+  s2_y <- 1/rgamma(1, shape=(nun/2), scale=(ss/2))
   return(s2_y)
 }
-newMu <- function(Y, xi, eta, s2_y, g20, mu0, n)
+newMu <- function(y, xi, eta, s2_y, g20, mu0, n)
 {
-  v = 1/(sum(n)/s2_y + 1/g20)
-  sumd = 0
-  for(i in 1:m) sumd = sumd + sum(Y$arsenic[which(Y$food_num==i)] - xi*eta[i])
-  e = v* sumd/s2_y + mu0/g20
-  mu = rnorm(1, e, v)
+  v = ( sum(n)/s2_y + 1/g20 )
+  ss = sum(y-rep(eta,times=n)*xi)/s2_y + mu0/g20
+  e = (ss/s2_y + mu0/g20)
+  mu = rnorm(1, ss/v, sqrt(1/v))
   return(mu)
 }
-newEta <- function(xi, mu, Y, n, s2_y, s2_eta)
+newEta <- function(xi, mu, ybar, n, s2_y, s2_eta)
 {
   v = 1/(n*xi^2/s2_y + 1/s2_eta)
-  e = v * xi/s2_y*sum(Y$arsenic[which(Y$food_num==i)] - mu)
-  eta = rnorm(1, e, v)
+  e = v*xi*(n*ybar - mu*n)/s2_y
+  eta = rnorm(m, e, sqrt(v))
   return(eta)
 }
-newXi <- function(eta, m, Y, n, mu, s2_y)
+newXi <- function(eta, m, y, n, mu, s2_y)
 {
-  v = 1/(sum(n*eta^2)/s2_y + 1)
-  sumd = 0
-  for(i in 1:m) sumd = sumd + sum((Y$arsenic[which(Y$food_num==i)] - mu)*eta[i])
-  e = v * sumd/s2_y
-  xi = rnorm(1, e, v)
+  v = (sum(n*eta^2)/s2_y + 1)
+  e = sum((y-mu)*rep(eta,times=n))/s2_y
+  xi = rnorm(1, e/v, sqrt(1/v))
   return(xi)
 }
 ```
@@ -432,57 +427,96 @@ We run the MCMC algorithm:
 for(i in 1:S)
 {
   #Get new values for parameters
-  for(j in 1:m) eta[j] <- newEta(xi, mu, Y, n, s2_y, s2_eta)
-  s2_y <- newS2y(nu0, n, s2_y0, Y, m, eta, xi, mu)
-  s2_eta <- newS2eta(m, s2_eta, s2_eta0, eta, omega0)
-  mu <- newMu(Y, xi, eta, s2_y, g20, mu0, n)
-  xi <- newXi(eta, m, Y, n, mu, s2_y)
+  eta <- newEta(xi, mu, ybar, n, s2_y, s2_eta)
+  mu <- newMu(Y$arsenic, xi, eta, s2_y, g20, mu0, n)
   
+  s2_eta <- newS2eta(m, s2_eta0, eta, omega0)
+  s2_y <- newS2y(nu0, n, s2_y0, Y$arsenic, m, eta, xi, mu)
+  
+  xi <- newXi(eta, m, Y$arsenic, n, mu, s2_y)
   #Store in chain
   ETA[i,] <- eta
   RES[i,] <- c(mu,s2_y, s2_eta, xi)
-  ALL[i,] <- c(eta, mu,s2_y, s2_eta, xi)
+  ALL[i,] <- c(eta, mu, xi, s2_eta, s2_y)
 }
 ```
 
-Again, before we get too psyched about results, we check MCMC convergence criteria:
+Again, before we get too psyched about results, we check MCMC convergence criteria (code not shown, see above):
 
 ```{.r fig.width=10, fig.height=1.5, echo=FALSE}
-S <- 100
-library(ggplot2)
-print(ALL[1:20,])
 graphdata <- data.frame(
   "Iteration"=c(1:S), "Mu"=RES[,1], "s2_y"=RES[,2], "s2_eta"=RES[,3], "xi"=RES[,4],
   "Eta_1" = ETA[,1], "Eta_2" = ETA[,2], "Eta_3" = ETA[,3], 
   "Eta_4" = ETA[,4], "Eta_5" = ETA[,5])
 ggplot(graphdata,aes(x=Iteration,y=Mu)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=s2_y)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=s2_eta)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=xi)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=Eta_1)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_point(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=Eta_2)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_point(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=Eta_3)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_point(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=Eta_4)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_point(colour="wheat3")
 
 ggplot(graphdata,aes(x=Iteration,y=Eta_5)) +
-theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  theme_minimal(base_family = "") + geom_point(colour="wheat3")
 ```
+
+Obviously, something is wrong with the $\eta$ parameters, which could make sense since when the estimate of $\xi$ crosses zero, the $\eta$ parameters get updated on the other side of $0$ as well. Taking the absolute value of $\xi$ reassures us that the parameter space that is actually searched isn't terribad. We also check the convergence of $\mu + \xi\eta$, which is the mean concentration of arsenic in each group, and ultimately interests us. Reproduced below are the graphs for $|\eta_1|, |\eta_2|$, and $\boldsymbol{\theta}$
+
+```{.r fig.width=10, fig.height=1.5, echo=FALSE}
+ggplot(graphdata,aes(x=Iteration,y=abs(Eta_1))) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=abs(Eta_2))) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+  
+  ggplot(graphdata,aes(x=Iteration,y=Mu+Eta_1*xi)) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Mu+Eta_2*xi)) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=Mu+Eta_3*xi)) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=mu+Eta_4*xi)) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+
+ggplot(graphdata,aes(x=Iteration,y=mu+Eta_5*xi)) +
+  theme_minimal(base_family = "") + geom_line(colour="wheat3")
+```
+We are fairly satisfied with the outlook on the convergence of our $\theta$'s.
 \subsection{2.3 Algorithm output}
+We provide the median estimate and 95\% credible interval for the $\theta$ parameters in this expanded hierarchical specification model:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 2.810 & 3.569 & 4.308 \\ 
+    $\theta_2$ (Non-Basmati) & 5.790 & 6.533 & 7.305 \\
+    $\theta_3$ (Beverage) & 1.869 & 4.231 & 6.448 \\
+    $\theta_4$ (Cakes) & 4.486 & 5.370 & 6.301 \\
+    $\theta_5$ (Cereal) & 2.705 & 3.610 & 4.507 \\
+    $\mu$ & 3.193 & 4.697 & 6.182 \\
+    $\sigma^2$ & 5.109 & 7.027 & 10.573 \\
+    $\tau^2$ & 0.693 &2.251 & 12.920 \\ \hline
+  \end{tabular}
+\end{center}
 \subsection{2.4 Sensitivity analyses}
 
 \newpage \section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
