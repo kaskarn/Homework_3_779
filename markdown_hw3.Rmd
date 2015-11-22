@@ -275,7 +275,7 @@ We observe that excessively large prior expectations of $\mu$ will drive up esti
 
 \subsection{1.5 Results presentation}
 
-Non-Basmati rice had the highest arsenic concentration, at an estimated 6.7 mcg/serving. Rice cakes came second, at 5.4 mcg/serving, and non-Basmati and rice cereal had comparatively low amounts, slightly below 3.5 mcg/serving. There lacked data to reliably evaluate arsenic concentration in rice beverages, whose 3.8 mcg/serving estimate was particulary imprecise (95\% CI=0.64, 6.93). Posterior median estimates and observed mean concentrations of arsenic are presented by product type in the following graph. Markers are $\theta$ estimates with $95\%$ credible interval lines; horizontal lines are the median estimate of $\mu$ (solid) and corresponding $95\%$ credibal interval (dashed, like my hopes and dreams).
+Non-Basmati rice had the highest arsenic concentration, at an estimated 6.7 mcg/serving. Rice cakes came second, at 5.4 mcg/serving, and non-Basmati and rice cereal had comparatively low amounts, slightly below 3.5 mcg/serving. There lacked data to reliably evaluate arsenic concentration in rice beverages, whose 3.8 mcg/serving estimate was particulary imprecise (95\% CI=0.64, 6.93). Posterior median estimates and observed mean concentrations of arsenic are presented by product type in the following graph. Markers are $\theta$ estimates with $95\%$ credible interval lines; horizontal lines are the median estimate of $\mu$ (solid) and corresponding $95\%$ credibal interval (dashed).
 
 ```{.r fig.width=10, fig.height=5, warning=FALSE}
 qmat=apply(THETA[,1:5],2,quantile,probs=c(0.025,.5,0.975))
@@ -500,27 +500,102 @@ ggplot(graphdata,aes(x=Iteration,y=mu+Eta_4*xi)) +
 ggplot(graphdata,aes(x=Iteration,y=mu+Eta_5*xi)) +
   theme_minimal(base_family = "") + geom_line(colour="wheat3")
 ```
-We are fairly satisfied with the outlook on the convergence of our $\theta$'s.
+We are fairly satisfied with the outlook on the convergence of our $\theta$'s, although obviously the wacky errors we'll get mean the credible intervals we get for $\theta$'s will be meaningless.
+
+\begin{figure}[h]
+  \centering \includegraphics[width=0.7\textwidth]{hadeswrong}
+  \caption{I know, Hades isn't pleased either}
+\end{figure}
 \subsection{2.3 Algorithm output}
 We provide the median estimate and 95\% credible interval for the $\theta$ parameters in this expanded hierarchical specification model:
 
 \begin{center}
   \begin{tabular}{l c c c}
   \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
-    $\theta_1$ (Basmati) & 2.810 & 3.569 & 4.308 \\ 
-    $\theta_2$ (Non-Basmati) & 5.790 & 6.533 & 7.305 \\
-    $\theta_3$ (Beverage) & 1.869 & 4.231 & 6.448 \\
-    $\theta_4$ (Cakes) & 4.486 & 5.370 & 6.301 \\
-    $\theta_5$ (Cereal) & 2.705 & 3.610 & 4.507 \\
-    $\mu$ & 3.193 & 4.697 & 6.182 \\
-    $\sigma^2$ & 5.109 & 7.027 & 10.573 \\
-    $\tau^2$ & 0.693 &2.251 & 12.920 \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
   \end{tabular}
 \end{center}
-\subsection{2.4 Sensitivity analyses}
 
-\newpage \section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
+\subsection{2.4 Sensitivity analyses}
+We repeat the sensitivity analyses of section 1.4:
+\begin{enumerate}
+  \item Large expected $\mu$ (Prior expectation of mad levels of arsenic)
+  \item Large $\sigma^2$ and $\nu_0$ (High variability within products)
+  \item Large $\tau^2$ and $\eta_0$ (High variability between products)
+\end{enumerate}
+
+\textit{Scenario 1}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.421 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.332 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 2}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 3}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+We observe that outrageous standard errors will prevent any meaningful sensitivity analyses.
+
+\subsection{2.5 Results presentation}
+
+Based on our analyses, and under the assumption we did nothing incorrect, we are nearly positive that the type of rice with the greatest arsenic concentration is non-basmati rice, at 6.420 mcg/serving, followed by cake rice products, at 5.308 mcg/serving. Basmati and cereal products both neared 6.6mcg of arsening  per serving, beverage products, which should have constituted an imprecise estimate (but did not), had an estimated arsenic concentration at 6.454 mcg/serving (95\% CI=4.361,4.544).
+
+Posterior median estimates and observed mean concentrations of arsenic are presented by product type in the following graph. Markers are $\theta$ estimates with $95\%$ credible interval lines; horizontal lines are the median estimate of $\mu$ (solid) and corresponding $95\%$ credibal interval (dashed, like my hopes and dreams).
+
+```{.r fig.width=10, fig.height=5, warning=FALSE, echo=FALSE}
+qmat=apply(ETA*RES[,4]+RES[,1],2,quantile,probs=c(0.025,.5,0.975))
+res <- data.frame("Rice"=c("Non-Basmati", "Basmati", "Beverages", "Cakes", "Cereal"),
+                  "l95"=qmat[1,], "median"=qmat[2,], "u95"=qmat[3,], "mean"=ybar)
+g <- ggplot(res, aes(x = Rice, group=Rice, colour=Rice)) + 
+  labs(x="Rice Products", y="Arsenic concentration, mcg/serving") + 
+  theme(legend.position="none", panel.background =element_rect(colour = "black")) +
+  scale_y_continuous(breaks=seq(0, 7.5, 1)) +
+  geom_hline(aes(yintercept=c(mu_ci[2])), size=0.7) +
+  geom_hline(aes(yintercept=c(mu_ci[1])), linetype="dashed") +
+  geom_hline(aes(yintercept=c(mu_ci[3])), linetype="dashed") +
+  geom_errorbar(aes(ymin=l95, ymax=u95), width=.3, size=0.8) +
+  geom_point(aes(y=median), fill="white", shape=21, size=5)  +
+  geom_point(aes(y=mean), fill="red", shape=21, size=3)
+g
+```
+
+
+\section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
 \subsection{3.1 Model specification}
 \subsection{3.2 Analyses}
 \subsection{3.3 Algorithm output}
 \subsection{3.4 Sensitivity analyses}
+

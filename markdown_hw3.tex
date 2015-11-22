@@ -136,7 +136,7 @@ The full conditional distribution of the parameters can be found to be
         \left\{ \theta_j \, | \, \sigma^2, y_{j,1},\ldots,y_{j,n} \right\} \sim& \, \mathcal{N}\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
         \left\{\mu \, | \, \theta_1,\ldots,\theta_m,\tau \right\} \sim& \, \mathcal{N} \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
         \left\{ 1/\tau^2 \, | \, \theta_1, \ldots, \theta_m, \mu \right\} \sim& \, \mathcal{N}\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
-        \left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)
+        \left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\left(\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)\right)
     \end{align*}
 
 \subsection{1.2 Main analyses}
@@ -395,7 +395,7 @@ and observed mean concentrations of arsenic are presented by product
 type in the following graph. Markers are \(\theta\) estimates with
 \(95\%\) credible interval lines; horizontal lines are the median
 estimate of \(\mu\) (solid) and corresponding \(95\%\) credibal interval
-(dashed, like my hopes and dreams).
+(dashed).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -461,13 +461,12 @@ sum of squares of \(\boldsymbol{\eta}\) given its \(\mathbb{E}=0\) is
 simply \(\sum\limits_j\eta_j^2\)
 
 \begin{flalign*}
-p\left( \sigma^2_y \, | \, \mathbf{y}, \mu, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\nu_0 + N}{2}, \frac{1}{2}\left( \nu_0\sigma_{y0}^2 + \sum\limits_j\sum\limits_i y_{ij} - \mu - \xi\eta_j \right)^2 \right) & \\
-p\left( \sigma^2_\eta \, | \, \mathbf{y}, \mu, \sigma^2_y, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \mathcal{N}\left( \frac{\omega_0 + m}{2}, \frac{1}{2}\left( \omega_0\sigma_{\eta_0}^2 + \sum\limits_j\eta_j^2 \right) \right)  &
+p\left( 1/\sigma^2_y \, | \, \mathbf{y}, \mu, \sigma^2_\eta, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \text{gamma }\left( \frac{\nu_0 + N}{2}, \frac{1}{2}\left( \nu_0\sigma_{y0}^2 + \sum\limits_j\sum\limits_i \left(y_{ij} - \mu - \xi\eta_j \right)^2 \right) \right) & \\
+p\left( 1/\sigma^2_\eta \, | \, \mathbf{y}, \mu, \sigma^2_y, \xi, \eta_1,\ldots,\eta_m \right) \alpha& \; \text{gamma }\left( \frac{\omega_0 + m}{2}, \frac{1}{2}\left( \omega_0\sigma_{\eta_0}^2 + \sum\limits_j\eta_j^2 \right) \right)  &
 \end{flalign*}
 
-Getting full conditionals is trickier and requires recognizing that
-\(\mathbb{E}\left(aX \right) = a\mathbb{E}\left( X \right)\) and
-\(Var\left(aX \right) = a^2Var\left(X\right)\), so that:
+Getting full conditionals on \(\boldsymbol{\eta}\) and \(\xi\) can be
+likewise achieved by manipulating \(y_{ij} = \mu + \eta_j\xi\).
 
 \begin{flalign*}
   p\left( \eta_j \, | \, \mathbf{y}, \mu, \sigma^2_y, \sigma^2_\eta, \xi \right) \alpha& \; \mathcal{N}\left( \frac{\frac{\xi\sum\limits_iy_{ij}-\mu}{\sigma^2_y}}{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}, \frac{1}{{\frac{n_j\xi^2}{\sigma^2_y}+\frac{1}{\sigma^2_\eta}}}\right) & 
@@ -555,44 +554,39 @@ above:
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{#FUNCTIONS}
-\NormalTok{newS2eta <-}\StringTok{ }\NormalTok{function(m, s2_eta, s2_eta0, eta, omega0)}
+\NormalTok{newS2eta <-}\StringTok{ }\NormalTok{function(m, s2_eta0, eta, omega0)}
 \NormalTok{\{}
-  \NormalTok{nomega =}\StringTok{ }\NormalTok{omega0 +}\StringTok{ }\NormalTok{m}
   \NormalTok{ss <-}\StringTok{ }\NormalTok{s2_eta0*omega0 +}\StringTok{ }\KeywordTok{sum}\NormalTok{( eta^}\DecValTok{2} \NormalTok{)}
-  \NormalTok{s2_eta <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, nomega/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \NormalTok{s2_eta <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DataTypeTok{shape=}\NormalTok{((omega0 +}\StringTok{ }\NormalTok{m)/}\DecValTok{2}\NormalTok{), }\DataTypeTok{scale=}\NormalTok{(ss/}\DecValTok{2}\NormalTok{))}
   \KeywordTok{return}\NormalTok{(s2_eta)}
 \NormalTok{\}}
-\NormalTok{newS2y <-}\StringTok{ }\NormalTok{function(nu0, n, s2_y0, Y, m, eta, xi, mu)}
+\NormalTok{newS2y <-}\StringTok{ }\NormalTok{function(nu0, n, s2_y0, y, m, eta, xi, mu)}
 \NormalTok{\{}
   \NormalTok{nun =}\StringTok{ }\NormalTok{nu0 +}\StringTok{ }\KeywordTok{sum}\NormalTok{(n)}
-  \NormalTok{ss =}\StringTok{ }\NormalTok{nu0 *}\StringTok{ }\NormalTok{s2_y0}
-  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) ss =}\StringTok{ }\NormalTok{ss+}\KeywordTok{sum}\NormalTok{((Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu -}\StringTok{ }\NormalTok{xi*eta[j])^}\DecValTok{2}\NormalTok{)}
-  \NormalTok{s2_y <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, nun/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \NormalTok{ss =}\StringTok{ }\KeywordTok{sum}\NormalTok{((y -}\StringTok{ }\NormalTok{mu -}\StringTok{ }\NormalTok{xi*}\KeywordTok{rep}\NormalTok{(eta, }\DataTypeTok{times=}\NormalTok{n))^}\DecValTok{2}\NormalTok{) +}\StringTok{ }\NormalTok{nu0*s2_y0}
+  \NormalTok{s2_y <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DataTypeTok{shape=}\NormalTok{(nun/}\DecValTok{2}\NormalTok{), }\DataTypeTok{scale=}\NormalTok{(ss/}\DecValTok{2}\NormalTok{))}
   \KeywordTok{return}\NormalTok{(s2_y)}
 \NormalTok{\}}
-\NormalTok{newMu <-}\StringTok{ }\NormalTok{function(Y, xi, eta, s2_y, g20, mu0, n)}
+\NormalTok{newMu <-}\StringTok{ }\NormalTok{function(y, xi, eta, s2_y, g20, mu0, n)}
 \NormalTok{\{}
-  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(}\KeywordTok{sum}\NormalTok{(n)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{/g20)}
-  \NormalTok{sumd =}\StringTok{ }\DecValTok{0}
-  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) sumd =}\StringTok{ }\NormalTok{sumd +}\StringTok{ }\KeywordTok{sum}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{xi*eta[i])}
-  \NormalTok{e =}\StringTok{ }\NormalTok{v*}\StringTok{ }\NormalTok{sumd/s2_y +}\StringTok{ }\NormalTok{mu0/g20}
-  \NormalTok{mu =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \NormalTok{v =}\StringTok{ }\NormalTok{( }\KeywordTok{sum}\NormalTok{(n)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{/g20 )}
+  \NormalTok{ss =}\StringTok{ }\KeywordTok{sum}\NormalTok{(y-}\KeywordTok{rep}\NormalTok{(eta,}\DataTypeTok{times=}\NormalTok{n)*xi)/s2_y +}\StringTok{ }\NormalTok{mu0/g20}
+  \NormalTok{e =}\StringTok{ }\NormalTok{(ss/s2_y +}\StringTok{ }\NormalTok{mu0/g20)}
+  \NormalTok{mu =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, ss/v, }\KeywordTok{sqrt}\NormalTok{(}\DecValTok{1}\NormalTok{/v))}
   \KeywordTok{return}\NormalTok{(mu)}
 \NormalTok{\}}
-\NormalTok{newEta <-}\StringTok{ }\NormalTok{function(xi, mu, Y, n, s2_y, s2_eta)}
+\NormalTok{newEta <-}\StringTok{ }\NormalTok{function(xi, mu, ybar, n, s2_y, s2_eta)}
 \NormalTok{\{}
   \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(n*xi^}\DecValTok{2}\NormalTok{/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{/s2_eta)}
-  \NormalTok{e =}\StringTok{ }\NormalTok{v *}\StringTok{ }\NormalTok{xi/s2_y*}\KeywordTok{sum}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu)}
-  \NormalTok{eta =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v*xi*(n*ybar -}\StringTok{ }\NormalTok{mu*n)/s2_y}
+  \NormalTok{eta =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(m, e, }\KeywordTok{sqrt}\NormalTok{(v))}
   \KeywordTok{return}\NormalTok{(eta)}
 \NormalTok{\}}
-\NormalTok{newXi <-}\StringTok{ }\NormalTok{function(eta, m, Y, n, mu, s2_y)}
+\NormalTok{newXi <-}\StringTok{ }\NormalTok{function(eta, m, y, n, mu, s2_y)}
 \NormalTok{\{}
-  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(}\KeywordTok{sum}\NormalTok{(n*eta^}\DecValTok{2}\NormalTok{)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{)}
-  \NormalTok{sumd =}\StringTok{ }\DecValTok{0}
-  \NormalTok{for(i in }\DecValTok{1}\NormalTok{:m) sumd =}\StringTok{ }\NormalTok{sumd +}\StringTok{ }\KeywordTok{sum}\NormalTok{((Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)] -}\StringTok{ }\NormalTok{mu)*eta[i])}
-  \NormalTok{e =}\StringTok{ }\NormalTok{v *}\StringTok{ }\NormalTok{sumd/s2_y}
-  \NormalTok{xi =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, v)}
+  \NormalTok{v =}\StringTok{ }\NormalTok{(}\KeywordTok{sum}\NormalTok{(n*eta^}\DecValTok{2}\NormalTok{)/s2_y +}\StringTok{ }\DecValTok{1}\NormalTok{)}
+  \NormalTok{e =}\StringTok{ }\KeywordTok{sum}\NormalTok{((y-mu)*}\KeywordTok{rep}\NormalTok{(eta,}\DataTypeTok{times=}\NormalTok{n))/s2_y}
+  \NormalTok{xi =}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e/v, }\KeywordTok{sqrt}\NormalTok{(}\DecValTok{1}\NormalTok{/v))}
   \KeywordTok{return}\NormalTok{(xi)}
 \NormalTok{\}}
 \end{Highlighting}
@@ -606,67 +600,23 @@ We run the MCMC algorithm:
 \NormalTok{for(i in }\DecValTok{1}\NormalTok{:S)}
 \NormalTok{\{}
   \CommentTok{#Get new values for parameters}
-  \NormalTok{for(j in }\DecValTok{1}\NormalTok{:m) theta[j] <-}\StringTok{ }\KeywordTok{newEta}\NormalTok{(xi, mu, Y, n, s2_y, s2_eta)}
-  \NormalTok{s2_y <-}\StringTok{ }\KeywordTok{newS2y}\NormalTok{(nu0, n, s2_y0, Y, m, eta, xi, mu)}
-  \NormalTok{s2_eta <-}\StringTok{ }\KeywordTok{newS2eta}\NormalTok{(m, s2_eta, s2_eta0, eta, omega0)}
-  \NormalTok{mu <-}\StringTok{ }\KeywordTok{newMu}\NormalTok{(Y, xi, eta, s2_y, g20, mu0, n)}
-  \NormalTok{xi <-}\StringTok{ }\KeywordTok{newXi}\NormalTok{(eta, m, Y, n, mu, s2_y)}
+  \NormalTok{eta <-}\StringTok{ }\KeywordTok{newEta}\NormalTok{(xi, mu, ybar, n, s2_y, s2_eta)}
+  \NormalTok{mu <-}\StringTok{ }\KeywordTok{newMu}\NormalTok{(Y$arsenic, xi, eta, s2_y, g20, mu0, n)}
   
+  \NormalTok{s2_eta <-}\StringTok{ }\KeywordTok{newS2eta}\NormalTok{(m, s2_eta0, eta, omega0)}
+  \NormalTok{s2_y <-}\StringTok{ }\KeywordTok{newS2y}\NormalTok{(nu0, n, s2_y0, Y$arsenic, m, eta, xi, mu)}
+  
+  \NormalTok{xi <-}\StringTok{ }\KeywordTok{newXi}\NormalTok{(eta, m, Y$arsenic, n, mu, s2_y)}
   \CommentTok{#Store in chain}
   \NormalTok{ETA[i,] <-}\StringTok{ }\NormalTok{eta}
   \NormalTok{RES[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(mu,s2_y, s2_eta, xi)}
-  \NormalTok{ALL[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(eta, mu,s2_y, s2_eta, xi)}
+  \NormalTok{ALL[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(eta, mu, xi, s2_eta, s2_y)}
 \NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
 Again, before we get too psyched about results, we check MCMC
-convergence criteria:
-
-\begin{verbatim}
-##            [,1]     [,2]      [,3]      [,4]      [,5]     [,6]     [,7]
-##  [1,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.667968 4.903008
-##  [2,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.683804 6.006653
-##  [3,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.652164 6.628165
-##  [4,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.645594 6.068511
-##  [5,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.620257 5.474539
-##  [6,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.641334 6.338744
-##  [7,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.642847 6.180044
-##  [8,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.688390 5.774271
-##  [9,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.718387 5.871248
-## [10,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.613030 6.048364
-## [11,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.589698 5.280218
-## [12,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.621325 5.720858
-## [13,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.691593 5.509906
-## [14,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.590404 6.907127
-## [15,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.657124 5.480785
-## [16,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.678040 6.070337
-## [17,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.711129 5.536881
-## [18,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.708383 5.813949
-## [19,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.647771 6.878466
-## [20,] -1.330427 1.853247 -1.051515 0.6286932 -1.330682 5.605647 6.191938
-##            [,8]      [,9]
-##  [1,]  4.473581 0.9799366
-##  [2,]  3.738244 0.9552652
-##  [3,] 11.004107 0.9412060
-##  [4,]  5.327483 0.9675979
-##  [5,]  1.867751 0.9843936
-##  [6,]  3.104652 0.9590547
-##  [7,]  6.200617 0.9802011
-##  [8,]  2.002595 1.0020117
-##  [9,]  3.204125 0.9694308
-## [10,]  3.417037 0.9828693
-## [11,]  6.280930 0.9810677
-## [12,] 22.359658 0.9988978
-## [13,]  8.994325 0.9852938
-## [14,]  2.123587 0.9948622
-## [15,]  3.909016 0.9885898
-## [16,]  2.068103 0.9843450
-## [17,]  3.012525 0.9837987
-## [18,]  3.080198 0.9811986
-## [19,]  8.931096 1.0101091
-## [20,] 12.275305 0.9794007
-\end{verbatim}
+convergence criteria (code not shown, see above):
 
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-1.pdf}
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-2.pdf}
@@ -677,8 +627,116 @@ convergence criteria:
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-7.pdf}
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-8.pdf}
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-16-9.pdf}
-\subsection{2.3 Algorithm output} \subsection{2.4 Sensitivity analyses}
 
+Obviously, something is wrong with the \(\eta\) parameters, which could
+make sense since when the estimate of \(\xi\) crosses zero, the \(\eta\)
+parameters get updated on the other side of \(0\) as well. Taking the
+absolute value of \(\xi\) reassures us that the parameter space that is
+actually searched isn't terribad. We also check the convergence of
+\(\mu + \xi\eta\), which is the mean concentration of arsenic in each
+group, and ultimately interests us. Reproduced below are the graphs for
+\(|\eta_1|, |\eta_2|\), and \(\boldsymbol{\theta}\)
+
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-1.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-2.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-3.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-4.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-5.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-6.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-17-7.pdf}
+We are fairly satisfied with the outlook on the convergence of our
+\(\theta\)'s, although obviously the wacky errors we'll get mean the
+credible intervals we get for \(\theta\)'s will be meaningless.
+
+\begin{figure}[h]
+  \centering \includegraphics[width=0.4\textwidth]{hadeswrong}
+  \caption{I know, Hades isn't pleased either}
+\end{figure}\subsection{2.3 Algorithm output}
+
+We provide the median estimate and 95\% credible interval for the
+\(\theta\) parameters in this expanded hierarchical specification model:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+\subsection{2.4 Sensitivity analyses}
+
+We repeat the sensitivity analyses of section 1.4:
+
+\begin{enumerate}
+  \item Large expected $\mu$ (Prior expectation of mad levels of arsenic)
+  \item Large $\sigma^2$ and $\nu_0$ (High variability within products)
+  \item Large $\tau^2$ and $\eta_0$ (High variability between products)
+\end{enumerate}
+
+\textit{Scenario 1}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.421 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.332 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 2}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 3}:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 3.610 & 3.619 & 3.639 \\ 
+    $\theta_2$ (Non-Basmati) & 6.420 & 6.454 & 6.503 \\
+    $\theta_3$ (Beverage) & 4.072 & 4.361 & 4.544 \\
+    $\theta_4$ (Cakes) & 5.308 & 5.331 & 5.345 \\
+    $\theta_5$ (Cereal) & 3.649 & 3.670 & 3.747 \\ \hline
+  \end{tabular}
+\end{center}
+
+We observe that outrageous standard errors will prevent any meaningful
+sensitivity analyses.
+
+\subsection{2.5 Results presentation}
+
+Based on our analyses, and under the assumption we did nothing
+incorrect, we are nearly positive that the type of rice with the
+greatest arsenic concentration is non-basmati rice, at 6.420
+mcg/serving, followed by cake rice products, at 5.308 mcg/serving.
+Basmati and cereal products both neared 6.6mcg of arsening per serving,
+beverage products, which should have constituted an imprecise estimate
+(but did not), had an estimated arsenic concentration at 6.454
+mcg/serving (95\% CI=4.361,4.544).
+
+Posterior median estimates and observed mean concentrations of arsenic
+are presented by product type in the following graph. Markers are
+\(\theta\) estimates with \(95\%\) credible interval lines; horizontal
+lines are the median estimate of \(\mu\) (solid) and corresponding
+\(95\%\) credibal interval (dashed, like my hopes and dreams).
+
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-18-1.pdf}
 \newpage \section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
 \subsection{3.1 Model specification} \subsection{3.2 Analyses}
 \subsection{3.3 Algorithm output} \subsection{3.4 Sensitivity analyses}
