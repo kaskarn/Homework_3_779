@@ -8,7 +8,7 @@ output:
     highlight: zenburn
     keep_tex: yes
 ---
-
+\textit{All .R code and relevant files can be accessed at} \url{https://github.com/kaskarn/Homework_3_779}
 \section{1. Standard conditionally-conjugate specification of the hierarchical model}
 \subsection{1.1 Model specification}
 
@@ -637,7 +637,7 @@ nu0 <- 1
 #Setup MCMC
 set.seed(0808)
 S <- 10000
-THETA <- S2 <- matrix(nrow=S, ncol=m)
+THETA2 <- S2 <- matrix(nrow=S, ncol=m)
 RES <- matrix(nrow=S, ncol=4)
 ALL <- matrix(nrow=S, ncol=4+2*m)
 NUMAX <- 10000
@@ -696,7 +696,7 @@ for(i in 1:S)
   
   
   #Store in chain
-  THETA[i,] <- theta
+  THETA2[i,] <- theta
   S2[i,] <- s2
   RES[i,] <- c(mu,tau2, nu0, s20)
   ALL[i,] <- c(theta,s2,mu,tau2, nu0, s20)
@@ -707,8 +707,8 @@ Trace plots for the parameters follow:
 
 ```{.r fig.width=10, fig.height=1.5, echo=FALSE}
 graphdata <- data.frame("Iteration"=c(1:S), "Mu"=RES[,1], "Tau2"=RES[,2], "Nu_0"=RES[,3], "Sigma2_0"=RES[,4], 
-                        "Theta_1" = THETA[,1], "Theta_2" = THETA[,2], "Theta_3" = THETA[,3],
-                        "Theta_4" = THETA[,4], "Theta_5" = THETA[,5], 
+                        "Theta_1" = THETA2[,1], "Theta_2" = THETA2[,2], "Theta_3" = THETA2[,3],
+                        "Theta_4" = THETA2[,4], "Theta_5" = THETA2[,5], 
                         "Sigma_1" = S2[,1], "Sigma_2" = S2[,2], "Sigma_3" = S2[,3],
                         "Sigma_4" = S2[,4], "Sigma_5" = S2[,5])
 
@@ -789,7 +789,7 @@ We repeat the sensitivity analyses of section 1.4:
 
 \begin{center}
   \begin{tabular}{l c c c c}
-  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% & Big change?  \\ \hline
     $\theta_1$ (Basmati) & 0.913 & 3.505 & 6.207 & Yes\\ 
     $\theta_2$ (Non-Basmati) & 4.062 & 6.686 & 9.437 & Yes \\
     $\theta_3$ (Beverage) & -32.754 & 8.074 & 71.878 & Yes \\
@@ -856,7 +856,7 @@ Results from these sensitivity analyses are analogous to those from section 1.4;
 \subsection{3.5 Presentation of results}
 
 ```{.r fig.width=10, fig.height=5, warning=FALSE, echo=FALSE}
-qmat=apply(THETA,2,quantile,probs=c(0.025,0.5,0.975))
+qmat=apply(THETA2,2,quantile,probs=c(0.025,0.5,0.975))
 mu_ci = quantile(RES[,1], probs=(c(0.025, 0.5, 0.975)))
 res <- data.frame("Rice"=c("Non-Basmati", "Basmati", "Beverages", "Cakes", "Cereal"),
                   "l95"=qmat[1,], "median"=qmat[2,], "u95"=qmat[3,], "mean"=ybar)
@@ -872,3 +872,14 @@ g <- ggplot(res, aes(x = Rice, group=Rice, colour=Rice)) +
   geom_point(aes(y=mean), fill="red", shape=21, size=3)
 g
 ```
+\section{4. Discussion of shrinkage}
+
+Ignoring our failed attempt at the parameter-expanded model, we observed greater shrinkage when modelling group-specific variances than when setting them all equal, as the greater uncertainty on the models pulled them closer to the prior population mean.
+
+\section{5. Discussion of imputation}
+
+Replacing data with mean by-group observations would simply drive down the estimates on the errors around $\theta$'s, while reducing shrinkage, driving $\theta$'s towards $\bar{y}$. This follows from $\bar{y}$ remaining unchanged, but $n_j$ increasing proportional to the amount of imputed data.
+
+\section{6. Model comparisons}
+
+Again, we must ignore the parameter-expanded model from these comparisons. Model 1 and 3 lead to similar inferences, although Model 3 has much greater uncertainty around the median estimates of $\theta$'s. Both models clearly suggest that Basmati rice products ought to receive special scrutiny when evaluating their arsenic contents, whereas urgent attention seems less warranted with non-basmati and ceraeal products. There lacks data to convincingly determine whether rice beverage products stand exactly with relation to others.

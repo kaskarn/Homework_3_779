@@ -111,7 +111,10 @@
 \maketitle
 
 
-\section{1. Standard conditionally-conjugate specification of the hierarchical model}\subsection{1.1 Model specification}
+\textit{All .Rcode and relevant files can be accessed at}
+\url{https://github.com/kaskarn/Homework_3_779}
+\section{1. Standard conditionally-conjugate specification of the hierarchical model}
+\subsection{1.1 Model specification}
 
 In this model specification, the \(i^{th}\) arsenic reading of group
 \(j\), \(y_{ij}\) is normally-distributed, so that
@@ -135,8 +138,8 @@ The full conditional distribution of the parameters can be found to be
 \begin{align*}
         \left\{ \theta_j \, | \, \sigma^2, y_{j,1},\ldots,y_{j,n} \right\} \sim& \, \mathcal{N}\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
         \left\{\mu \, | \, \theta_1,\ldots,\theta_m,\tau \right\} \sim& \, \mathcal{N} \left( \frac{m\bar{\theta}/\tau^2 + \mu_0/\gamma_0^2}{m/\tau^2+1/\gamma_0^2},\left[ m/\tau^2 + 1/\gamma_0^2\right]^{-1} \right)\\
-        \left\{ 1/\tau^2 \, | \, \theta_1, \ldots, \theta_m, \mu \right\} \sim& \, \mathcal{N}\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
-        \left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \mathcal{N}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\left(\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)\right)
+        \left\{ 1/\tau^2 \, | \, \theta_1, \ldots, \theta_m, \mu \right\} \sim& \, \text{gamma}\left( \frac{\eta_0 +m}{2},\frac{\eta_o\tau^2_0+\sum\left(\theta_j -\mu \right)^2}{2} \right) \\
+        \left\{1/\sigma^2 \, | \, \boldsymbol{\theta}, y_1, \ldots, y_n \right\} \sim& \, \text{gamma}\left( \frac{1}{2}\left[ \nu_0 + \sum\limits_{j=1}^m n_j \right], \frac{1}{2}\left(\nu_0\sigma_0^2 + \sum\limits_{j=1}^m \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)\right)
     \end{align*}
 
 \subsection{1.2 Main analyses}
@@ -649,7 +652,7 @@ We are fairly satisfied with the outlook on the convergence of our
 credible intervals we get for \(\theta\)'s will be meaningless.
 
 \begin{figure}[h]
-  \centering \includegraphics[width=0.4\textwidth]{hadeswrong}
+  \centering \includegraphics[width=0.7\textwidth]{hadeswrong}
   \caption{I know, Hades isn't pleased either}
 \end{figure}\subsection{2.3 Algorithm output}
 
@@ -737,8 +740,289 @@ lines are the median estimate of \(\mu\) (solid) and corresponding
 \(95\%\) credibal interval (dashed, like my hopes and dreams).
 
 \includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-18-1.pdf}
-\newpage \section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}
-\subsection{3.1 Model specification} \subsection{3.2 Analyses}
-\subsection{3.3 Algorithm output} \subsection{3.4 Sensitivity analyses}
+
+\section{3. Conditionally-conjugate specification of the hierarchical model with group-specific variances}\subsection{3.1 Model specification}
+
+This model is similar to that laid out in section 1.1, with the
+exceptions that variance is allowed to vary between groups, with
+group-specific variances following a conjugate inverse-gamma
+distribution so that (from Hoff):
+
+\begin{align*}
+\left\{ \theta_j \, \left| \, \sigma^2, y_{j,1},\ldots,y_{j,n} \right. \right\} \sim& \, \mathcal{N}\left( \frac{n_j\bar{y}_j/\sigma^2+\mu/\tau^2}{n_j/\sigma^2 + 1/\tau^2}, \left[ n_j/\sigma^2+1/\tau^2\right]^{-1} \right) \\
+    \left\{1/\sigma^2_j \, \left| \, \boldsymbol{\theta}, y_1, \ldots, y_n \right. \right\} \sim& \, \text{gamma}\left( \frac{1}{2}\left[ \nu_0 + n_j \right], \frac{1}{2}\left(\nu_0\sigma_0^2 + \sum\limits_{i=1}^{n_j} \left(y_{i,j} -\theta_j \right)^2 \right)\right) \\
+    \left\{ \sigma^2_0 \left| \boldsymbol{\sigma}, \nu_0 \right. \right\} \sim& \, \text{gamma} \left( a + \frac{1}{2}m\nu_0, b + \frac{1}{2}\sum\limits_j\left( 1/\sigma^2_j \right) \right)
+    \intertext{and}
+    \left\{\nu_0 \left| \boldsymbol{\sigma} \right. \right\} \sim& \left( \frac{\left( \nu0\sigma_0^2/2\right)^{\nu_0/2}}{\Gamma\left( \nu_0/2\right)} \right)^m \left( \prod\limits_j\frac{1}{\sigma^2_j} \right)^{\nu_0/2-1} \times \exp\left\{ -\nu_0 \left( \alpha + \frac{1}{2} \sigma^2_0 \sum\limits_j \left( \frac{1}{\sigma^2_j}\right)\right) \right\}
+\end{align*}\subsection{3.2 Analyses}
+
+We keep the same priors for hyperparameters pertaining to \(\mu\) and
+\(\theta\), and additionally specify \(\alpha = 1, b = 3, a = 1\) for
+the prior distributions on \(\nu_0\) and \(\sigma^2_0\). Code to run
+analyses is as follows, please refer to the earlier sections for added
+description.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data <-}\StringTok{ }\KeywordTok{read.dta}\NormalTok{(}\DataTypeTok{file=}\StringTok{"arsenicrice2.dta"}\NormalTok{)}
+\NormalTok{Y <-}\StringTok{ }\KeywordTok{read.dta}\NormalTok{(}\DataTypeTok{file=}\StringTok{"arsenicrice2.dta"}\NormalTok{)}
+
+\CommentTok{#We set weakly informative prior values}
+\NormalTok{n <-}\StringTok{  }\KeywordTok{nrow}\NormalTok{(Y)}
+\NormalTok{eta0 <-}\StringTok{ }\DecValTok{1}\NormalTok{; t20 <-}\StringTok{ }\DecValTok{3}
+\NormalTok{mu0 <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(Y$arsenic) }
+\NormalTok{g20  <-}\StringTok{ }\KeywordTok{var}\NormalTok{(Y$arsenic)}
+\NormalTok{a =}\StringTok{ }\DecValTok{1}\NormalTok{; b =}\StringTok{ }\DecValTok{3}\NormalTok{; alpha =}\StringTok{ }\DecValTok{1}
+
+\CommentTok{# mu0 <- 100 #scenario 1}
+\CommentTok{# s20 <- 100*s20; nu0 <- 100 #scenario 2}
+\CommentTok{# t20 <- 100*t20; eta0 <- 100 #scenario 3}
+\CommentTok{#Setup starting values }
+
+\NormalTok{m <-}\StringTok{ }\KeywordTok{length}\NormalTok{(}\KeywordTok{unique}\NormalTok{(Y$food_num)) }\CommentTok{#number of groups}
+\NormalTok{n <-}\StringTok{ }\NormalTok{s2 <-}\StringTok{ }\NormalTok{ybar <-}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\OtherTok{NA}\NormalTok{,m) }
+\NormalTok{for (i in }\DecValTok{1}\NormalTok{:m) }
+\NormalTok{\{}
+  \NormalTok{n[i] <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(Y$food_num==i)}
+  \NormalTok{s2[i] <-}\StringTok{ }\KeywordTok{var}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)])}
+  \NormalTok{ybar[i] <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(Y$arsenic[}\KeywordTok{which}\NormalTok{(Y$food_num==i)])}
+\NormalTok{\}}
+\NormalTok{theta <-}\StringTok{ }\NormalTok{ybar; s2_0 <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(sv)}
+\NormalTok{mu <-}\StringTok{ }\KeywordTok{mean}\NormalTok{(theta); tau2 <-}\StringTok{ }\KeywordTok{var}\NormalTok{(theta)}
+\NormalTok{nu0 <-}\StringTok{ }\DecValTok{1}
+
+\CommentTok{#Setup MCMC}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{0808}\NormalTok{)}
+\NormalTok{S <-}\StringTok{ }\DecValTok{10000}
+\NormalTok{THETA2 <-}\StringTok{ }\NormalTok{S2 <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\NormalTok{m)}
+\NormalTok{RES <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4}\NormalTok{)}
+\NormalTok{ALL <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\DataTypeTok{nrow=}\NormalTok{S, }\DataTypeTok{ncol=}\DecValTok{4+2}\NormalTok{*m)}
+\NormalTok{NUMAX <-}\StringTok{ }\DecValTok{10000}
+
+\NormalTok{### Functions sampling from posteriors}
+\NormalTok{newTheta <-}\StringTok{ }\NormalTok{function(n, ybar, s2, tau2, mu)}
+\NormalTok{\{}
+  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(n/s2 +}\DecValTok{1}\NormalTok{/tau2)}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v *}\StringTok{ }\NormalTok{(ybar*n/s2 +}\StringTok{ }\NormalTok{mu/tau2)}
+  \NormalTok{new <-}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\KeywordTok{length}\NormalTok{(n), e, }\KeywordTok{sqrt}\NormalTok{(v))}
+  \KeywordTok{return}\NormalTok{(new)}
+\NormalTok{\}}
+\NormalTok{newSigma2 <-}\StringTok{ }\NormalTok{function(m, n, nu0, s20, theta, y)}
+\NormalTok{\{}
+  \NormalTok{nun =}\StringTok{ }\NormalTok{n +}\StringTok{ }\NormalTok{nu0}
+  \NormalTok{ss <-}\StringTok{ }\NormalTok{nu0 *}\StringTok{ }\NormalTok{s20 +}\StringTok{ }\KeywordTok{sum}\NormalTok{((y -}\StringTok{ }\KeywordTok{rep}\NormalTok{(theta, }\DataTypeTok{times=}\NormalTok{n))^}\DecValTok{2}\NormalTok{) }
+  \NormalTok{sigma2 <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(m, nun/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \KeywordTok{return}\NormalTok{(sigma2)}
+\NormalTok{\}}
+\NormalTok{newMu <-}\StringTok{ }\NormalTok{function(m, theta, tau2, g20)}
+\NormalTok{\{}
+  \NormalTok{v =}\StringTok{ }\DecValTok{1}\NormalTok{/(m/tau2 +}\StringTok{ }\DecValTok{1}\NormalTok{/g20)}
+  \NormalTok{e =}\StringTok{ }\NormalTok{v *(m*}\KeywordTok{mean}\NormalTok{(theta)/tau2 +}\StringTok{ }\NormalTok{mu0/g20)}
+  \NormalTok{mu <-}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, e, }\KeywordTok{sqrt}\NormalTok{(v))}
+  \KeywordTok{return}\NormalTok{(mu)}
+\NormalTok{\}}
+\NormalTok{newTau2 <-}\StringTok{ }\NormalTok{function(m, eta0, t20, theta, mu)}
+\NormalTok{\{}
+  \NormalTok{etam =}\StringTok{ }\NormalTok{eta0 +}\StringTok{ }\NormalTok{m}
+  \NormalTok{ss =}\StringTok{ }\NormalTok{eta0*t20 +}\StringTok{ }\KeywordTok{sum}\NormalTok{( (theta-mu) ^}\DecValTok{2} \NormalTok{)}
+  \NormalTok{tau2 <-}\StringTok{ }\DecValTok{1}\NormalTok{/}\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, etam/}\DecValTok{2}\NormalTok{, ss/}\DecValTok{2}\NormalTok{)}
+  \KeywordTok{return}\NormalTok{(tau2)}
+\NormalTok{\}}
+\NormalTok{newS20 <-}\StringTok{ }\NormalTok{function(m, nu0, s2, a, b)}
+\NormalTok{\{}
+  \NormalTok{L =}\StringTok{ }\NormalTok{a +}\StringTok{ }\FloatTok{0.5}\NormalTok{*m*nu0}
+  \NormalTok{R =}\StringTok{ }\NormalTok{b +}\StringTok{ }\FloatTok{0.5}\NormalTok{*}\KeywordTok{sum}\NormalTok{(}\DecValTok{1}\NormalTok{/s2^}\DecValTok{2}\NormalTok{)}
+  \NormalTok{s20 <-}\StringTok{ }\KeywordTok{rgamma}\NormalTok{(}\DecValTok{1}\NormalTok{, L, R)}
+\NormalTok{\}}
+
+\NormalTok{### Run MCMC}
+\NormalTok{for(i in }\DecValTok{1}\NormalTok{:S)}
+\NormalTok{\{}
+  \CommentTok{#Get new values for parameters}
+  \NormalTok{theta <-}\StringTok{ }\KeywordTok{newTheta}\NormalTok{(n, ybar, s2, tau2, mu)}
+  \NormalTok{s2 <-}\StringTok{ }\KeywordTok{newSigma2}\NormalTok{(m, n, nu0, s20, theta, Y$arsenic)}
+  \NormalTok{mu <-}\StringTok{ }\KeywordTok{newMu}\NormalTok{(m, theta, tau2, g20)}
+  \NormalTok{tau2 <-}\StringTok{ }\KeywordTok{newTau2}\NormalTok{(m, eta0, t20, theta, mu)}
+  \NormalTok{s20 <-}\StringTok{ }\KeywordTok{newS20}\NormalTok{(m, nu0, s2, a, b)}
+  
+  \NormalTok{x <-}\StringTok{ }\DecValTok{1}\NormalTok{:NUMAX}
+    \NormalTok{lpnu0<-m*(.}\DecValTok{5}\NormalTok{*x*}\KeywordTok{log}\NormalTok{(s20*x/}\DecValTok{2}\NormalTok{)-}\KeywordTok{lgamma}\NormalTok{(x/}\DecValTok{2}\NormalTok{))+}
+\StringTok{      }\NormalTok{(x/}\DecValTok{2-1}\NormalTok{)*}\KeywordTok{sum}\NormalTok{(}\KeywordTok{log}\NormalTok{(}\DecValTok{1}\NormalTok{/s2))+}
+\StringTok{      }\NormalTok{-x*(alpha}\FloatTok{+.5}\NormalTok{*s20*}\KeywordTok{sum}\NormalTok{(}\DecValTok{1}\NormalTok{/s2))}
+  \NormalTok{nu0<-}\KeywordTok{sample}\NormalTok{(x,}\DecValTok{1}\NormalTok{,}\DataTypeTok{prob=}\KeywordTok{exp}\NormalTok{(lpnu0-}\KeywordTok{max}\NormalTok{(lpnu0)))}
+  
+  
+  \CommentTok{#Store in chain}
+  \NormalTok{THETA2[i,] <-}\StringTok{ }\NormalTok{theta}
+  \NormalTok{S2[i,] <-}\StringTok{ }\NormalTok{s2}
+  \NormalTok{RES[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(mu,tau2, nu0, s20)}
+  \NormalTok{ALL[i,] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(theta,s2,mu,tau2, nu0, s20)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Trace plots for the parameters follow:
+
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-1.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-2.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-3.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-4.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-5.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-6.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-7.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-8.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-9.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-10.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-11.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-12.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-13.pdf}
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-20-14.pdf}
+
+Other than \(\sigma^2_3\) and \(\nu_0\), everything looks happy and
+converged. \(\sigma_3\) probably has a large range due to the small
+number of non-missing data on rice beverages.
+
+\begin{figure}[h]
+  \caption{Other than those two, we're good}
+  \centering \includegraphics[width=0.9\textwidth]{hades_mad}
+\end{figure}
+
+\subsection{3.3 Algorithm output}
+
+Estimates for parameter medians and their 95\% credible intervals are
+shown in the following table:
+
+\begin{center}
+  \begin{tabular}{l c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\%  \\ \hline
+    $\theta_1$ (Basmati) & 2.237 & 3.826 & 5.361 \\ 
+    $\theta_2$ (Non-Basmati) & 4.713 & 6.240 & 7.868 \\
+    $\theta_3$ (Beverage) & 0.394 & 4.841 & 9.097 \\
+    $\theta_4$ (Cakes) & 3.108 & 5.200 & 7.355 \\
+    $\theta_5$ (Cereal) & 1.827 & 4.042 & 6.122 \\ \hline
+    $\sigma_1$ (Basmati) & 18.545 & 33.132 & 61.644 \\ 
+    $\sigma_2$ (Non-Basmati) & 18.650 & 33.084 & 60.759 \\
+    $\sigma_3$ (Beverage) & 131.361 & 489.618 & 3600.339 \\
+    $\sigma_4$ (Cakes) & 27.028 & 50.380 & 100.924 \\
+    $\sigma_5$ (Cereal) & 26.807 & 50.369 & 101.083 \\ \hline
+    $\mu$ (Basmati) & 2.926 & 4.841 & 6.846 \\ 
+    $\tau_2$ (Non-Basmati) & 0.573 & 2.448 & 16.913 \\
+    $\nu_0$ (Beverage) & 1 & 1 & 1 \\
+    $\sigma2_0$ (Beverage) & 0.277 & 1.060 & 2.712 \\ \hline
+  \end{tabular}
+\end{center}
+
+\subsection{3.4 Sensitivity analyses}
+
+We repeat the sensitivity analyses of section 1.4:
+
+\begin{enumerate}
+  \item Large expected $\mu$ (Prior expectation of mad levels of arsenic)
+  \item Large $b$ and $\alpha$ (High variability within products)
+  \item Large $\tau^2$ and $\eta_0$ (High variability between products)
+\end{enumerate}
+
+\textit{Scenario 1}:
+
+\begin{center}
+  \begin{tabular}{l c c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% & Big change?  \\ \hline
+    $\theta_1$ (Basmati) & 0.913 & 3.505 & 6.207 & Yes\\ 
+    $\theta_2$ (Non-Basmati) & 4.062 & 6.686 & 9.437 & Yes \\
+    $\theta_3$ (Beverage) & -32.754 & 8.074 & 71.878 & Yes \\
+    $\theta_4$ (Cakes) & 1.528 & 5.485 & 9.821 & Yes \\
+    $\theta_5$ (Cereal) & -0.448 & 3.504 & 7.611 & Yes \\ \hline
+    $\sigma_1$ (Basmati) & 24.947 & 58.269 & 404.571 & Yes \\ 
+    $\sigma_2$ (Non-Basmati) & 25.104 & 57.722 & 404.574 & Yes  \\
+    $\sigma_3$ (Beverage) & 194.759 & 931.623 & 12209.972 & Yes  \\
+    $\sigma_4$ (Cakes) & 36.606 & 89.011 & 626.494 & Yes  \\
+    $\sigma_5$ (Cereal) & 35.694 & 89.044 & 628.468 & Yes  \\ \hline
+    $\mu$ (Basmati) & 95.120  & 99.723 & 104.288 & Yes  \\ 
+    $\tau_2$ (Non-Basmati) & 3033.227 & 8299.341 & 38038.052 & Yes!!  \\
+    $\nu_0$ (Beverage) & 1 & 1 & 1 & No \\
+    $\sigma2_0$ (Beverage) & 0.277 & 1.060 & 2.712  & Yes \\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 2}:
+
+\begin{center}
+  \begin{tabular}{l c c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% & Big change? \\ \hline
+    $\theta_1$ (Basmati) & 1.408 & 3.479 & 5.583 & Meh\\ 
+    $\theta_2$ (Non-Basmati) & 4.618 & 6.665 & 8.690 & Meh\\
+    $\theta_3$ (Beverage) & -19.383 & 4.385 & 27.663 & Meh\\
+    $\theta_4$ (Cakes) & 2.331 & 5.453 & 8.664 & Meh \\
+    $\theta_5$ (Cereal) & 0.273 & 3.465 & 6.660 & Yes\\ \hline
+    $\sigma_1$ (Basmati) & 23.249 & 47.513 & 107.471 & Meh \\ 
+    $\sigma_2$ (Non-Basmati) & 23.565 & 47.531 & 106.423 & Meh \\
+    $\sigma_3$ (Beverage) &  173.775 & 706.454 & 5455.201 & Meh \\
+    $\sigma_4$ (Cakes) & 34.267 & 72.325 & 173.977 & Meh \\
+    $\sigma_5$ (Cereal) & 33.941 & 72.486 & 174.818 & Meh \\ \hline
+    $\mu$ (Basmati) & 0.456 & 4.872 & 9.262 & Yes \\ 
+    $\tau_2$ (Non-Basmati) & 222.934 & 288.999 & 384.448 & Yes!! \\
+    $\nu_0$ (Beverage) & 1 & 1 & 1 & No\\
+    $\sigma2_0$ (Beverage) & 0.279 & 1.058 & 2.712 & Yes\\ \hline
+  \end{tabular}
+\end{center}
+
+\textit{Scenario 3}:
+
+\begin{center}
+  \begin{tabular}{l c c c c}
+  \hline Parameter & Credible Lower 95\% & Median & Credible Upper 95\% & Big change? \\ \hline
+    $\theta_1$ (Basmati) & 1.408 & 3.479 & 5.583 & No\\ 
+    $\theta_2$ (Non-Basmati) & 4.674 & 6.234 & 7.817 & No\\
+    $\theta_3$ (Beverage) & 0.490 & 4.814 & 9.144 & No\\
+    $\theta_4$ (Cakes) & 3.126 & 5.194 & 7.311 & No \\
+    $\theta_5$ (Cereal) & 1.864 & 4.039 & 6.094 & No\\ \hline
+    $\sigma_1$ (Basmati) & 18.609 & 33.008 & 60.612 & No \\ 
+    $\sigma_2$ (Non-Basmati) & 18.807 & 33.083 & 61.010 & No \\
+    $\sigma_3$ (Beverage) &  131.637 & 487.250 & 3367.378 & No \\
+    $\sigma_4$ (Cakes) & 26.960 & 50.231 & 98.334 & No \\
+    $\sigma_5$ (Cereal) & 26.904 & 50.614 & 100.647 & No \\ \hline
+    $\mu$ (Basmati) & 2.926 & 4.828 & 6.741 & No \\ 
+    $\tau_2$ (Non-Basmati) & 0.584 & 2.448 & 16.443 & No \\
+    $\nu_0$ (Beverage) & 1 & 1 & 1 & No\\
+    $\sigma2_0$ (Beverage) & 0.121 & 0.163 & 0.214 & Yes\\ \hline
+  \end{tabular}
+\end{center}
+
+Results from these sensitivity analyses are analogous to those from
+section 1.4; we observe that increasing \(\mu_0\) increases shrinking
+towards \(\mu\) and the error on \(\theta\)'s; increasing \(a\) and
+\(b\) increases the error on \(\theta\)'s and the estimates of
+\(\sigma\)'s; increasing \(\tau^2_0\) and \(\eta_0\) enlarges the
+credible interval around estimates of \(\sigma\)'s, along with,
+obviously, \(\tau^2_0\) itself.
+
+\subsection{3.5 Presentation of results}
+
+\includegraphics{markdown_hw3_files/figure-latex/unnamed-chunk-21-1.pdf}
+\section{4. Discussion of shrinkage}
+
+Ignoring our failed attempt at the parameter-expanded model, we observed
+greater shrinkage when modelling group-specific variances than when
+setting them all equal, as the greater uncertainty on the models pulled
+them closer to the prior population mean.
+
+\section{5. Discussion of imputation}
+
+Replacing data with mean by-group observations would simply drive down
+the estimates on the errors around \(\theta\)'s, while reducing
+shrinkage, driving \(\theta\)'s towards \(\bar{y}\). This follows from
+\(\bar{y}\) remaining unchanged, but \(n_j\) increasing proportional to
+the amount of imputed data.
+
+\section{6. Model comparisons}
+
+Again, we must ignore the parameter-expanded model from these
+comparisons. Model 1 and 3 lead to similar inferences, although Model 3
+has much greater uncertainty around the median estimates of
+\(\theta\)'s. Both models clearly suggest that Basmati rice products
+ought to receive special scrutiny when evaluating their arsenic
+contents, whereas urgent attention seems less warranted with non-basmati
+and ceraeal products. There lacks data to convincingly determine whether
+rice beverage products stand exactly with relation to others.
 
 \end{document}
